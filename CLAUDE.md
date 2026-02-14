@@ -170,6 +170,15 @@ All work follows a strict PR-based workflow. Every feature/fix gets its own bran
 
 **Production build:** Dockerfile builds client (Vite → static files) and server (tsc), then server serves both tRPC API and static client SPA. Single container.
 
+### Design System
+
+- **Theme**: Dark-first, zinc palette (neutral-900 base)
+- **Typography**: Inter font, semantic classes (text-display, text-heading-3, text-body, text-caption, text-overline)
+- **Colors**: Semantic tokens — status-info (blue), status-urgency-low (amber), status-urgency-high (rose), escalation-3 (red for overdue)
+- **Surfaces**: Layered — surface-root → surface-raised → surface-overlay
+- **ADHD-informed UX**: Surface what matters, reduce decision fatigue, clear visual hierarchy
+- **Components**: shadcn/ui (New York style) as base, extended with custom task-specific components
+
 ## What NOT To Do
 
 - No Sparkshaft imports — this is independent
