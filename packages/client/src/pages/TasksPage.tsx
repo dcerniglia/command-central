@@ -1,5 +1,4 @@
 import { useState, useRef, useMemo } from 'react';
-import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import { Inbox } from 'lucide-react';
 import TaskRow from '@/components/tasks/TaskRow';
@@ -16,6 +15,7 @@ export default function TasksPage() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
   const quickAddRef = useRef<QuickAddHandle>(null);
 
   useKeyboardShortcuts(useMemo(() => ({
@@ -121,20 +121,22 @@ export default function TasksPage() {
                   <div className="mt-6">
                     <button
                       className="text-caption text-muted-foreground hover:text-foreground transition-colors mb-2"
-                      onClick={() => {}}
+                      onClick={() => setShowCompleted(!showCompleted)}
                     >
-                      Completed ({doneTasks.length})
+                      {showCompleted ? '▾' : '▸'} Completed ({doneTasks.length})
                     </button>
-                    <div className="space-y-2">
-                      {doneTasks.map((task: any) => (
-                        <TaskRow
-                          key={task.id}
-                          task={task}
-                          onComplete={(id) => complete.mutate({ id })}
-                          onClick={(id) => setSelectedTaskId(id)}
-                        />
-                      ))}
-                    </div>
+                    {showCompleted && (
+                      <div className="space-y-2">
+                        {doneTasks.map((task: any) => (
+                          <TaskRow
+                            key={task.id}
+                            task={task}
+                            onComplete={(id) => complete.mutate({ id })}
+                            onClick={(id) => setSelectedTaskId(id)}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </>
