@@ -126,6 +126,14 @@ Every feature must have well-documented associated tests. Tests are not optional
 - Keep first line under 72 characters
 - Do NOT use conventional commits (feat:, fix:), past tense, or ALL CAPS
 
+## Git & PR Workflow
+
+- **Never merge PRs.** Only David merges. Claude creates PRs, fixes CI, updates branches, but merging is always a human action.
+- Feature branches off `develop`, PRs target `develop`
+- Branch naming: `feature/<name>`, `fix/<name>`, `docs/<name>`
+- Keep PRs focused — one feature or fix per PR
+- Monitor open PRs and fix CI failures proactively
+
 ## What NOT To Do
 
 - No Sparkshaft imports — this is independent
@@ -134,3 +142,4 @@ Every feature must have well-documented associated tests. Tests are not optional
 - No .js files — TypeScript only
 - No VS Code configs
 - Do not remove the legacy POC — it stays mounted at `/legacy` during migration
+- **Never run `gh pr merge`** — merging is reserved for David
