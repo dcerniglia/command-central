@@ -53,6 +53,20 @@ export const authRouter = router({
     return ctx.user ?? null;
   }),
 
+  // Test-only: create a session without WebAuthn (never available in production)
+  devLogin: publicProcedure
+    .input(z.object({ username: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('devLogin is not available in production');
+      }
+      const authService = ctx.container.get<AuthService>(SYMBOLS.AuthService);
+      // Create user if not exists, then create session
+      const { sessionId, expiresAt } = await authService.devLogin(input.username);
+      setSessionCookie(ctx, sessionId, expiresAt);
+      return { success: true };
+    }),
+
   logout: protectedProcedure.mutation(async ({ ctx }) => {
     if (ctx.sessionId) {
       const authService = ctx.container.get<AuthService>(SYMBOLS.AuthService);

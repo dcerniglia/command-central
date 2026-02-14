@@ -153,6 +153,15 @@ export class AuthService {
     await this.db.delete(sessions).where(eq(sessions.id, sessionId));
   }
 
+  async devLogin(username: string) {
+    // Find or create user (test/dev only)
+    let [user] = await this.db.select().from(users).where(eq(users.username, username));
+    if (!user) {
+      [user] = await this.db.insert(users).values({ username }).returning();
+    }
+    return this.createSession(user.id);
+  }
+
   private async createSession(userId: string) {
     const sessionId = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
