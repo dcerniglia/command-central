@@ -1,107 +1,102 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
-import { Inbox, CalendarDays, CalendarClock, ListChecks } from 'lucide-react';
+import { Inbox } from 'lucide-react';
 import TaskRow from '@/components/tasks/TaskRow';
 import TaskDetail from '@/components/tasks/TaskDetail';
+import TaskSidebar from '@/components/tasks/TaskSidebar';
 import QuickAdd from '@/components/tasks/QuickAdd';
 
-const views = [
-  { key: 'inbox' as const, label: 'Inbox', icon: Inbox },
-  { key: 'today' as const, label: 'Today', icon: CalendarDays },
-  { key: 'upcoming' as const, label: 'Upcoming', icon: CalendarClock },
-  { key: 'all' as const, label: 'All', icon: ListChecks },
-];
-
-type ViewKey = (typeof views)[number]['key'];
+type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
 
 export default function TasksPage() {
   const [activeView, setActiveView] = useState<ViewKey>('inbox');
+  const [activeListId, setActiveListId] = useState<string | null>(null);
+  const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
-  const { data: tasks = [], isLoading } = trpc.tasks.list.useQuery({ view: activeView });
+  // Build filter based on what's selected
+  const filter: Record<string, any> = {};
+  if (activeListId) {
+    filter.listId = activeListId;
+  } else if (activeAreaId) {
+    filter.areaId = activeAreaId;
+  } else {
+    filter.view = activeView;
+  }
+
+  const { data: tasks = [], isLoading } = trpc.tasks.list.useQuery(filter);
   const utils = trpc.useUtils();
 
   const complete = trpc.tasks.complete.useMutation({
     onSuccess: () => utils.tasks.list.invalidate(),
   });
 
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-
   const activeTasks = tasks.filter((t: any) => t.status === 'todo');
   const doneTasks = tasks.filter((t: any) => t.status === 'done');
 
+  function handleViewChange(view: ViewKey) {
+    setActiveView(view);
+    setActiveListId(null);
+    setActiveAreaId(null);
+  }
+
+  function handleListSelect(listId: string) {
+    setActiveListId(listId);
+    setActiveAreaId(null);
+  }
+
+  function handleAreaSelect(areaId: string) {
+    setActiveAreaId(areaId);
+    setActiveListId(null);
+  }
+
+  // Determine header title
+  let pageTitle = activeView.charAt(0).toUpperCase() + activeView.slice(1);
+  if (activeListId || activeAreaId) {
+    pageTitle = ''; // Will be set by sidebar context
+  }
+
   return (
     <div className="flex h-full">
+      <TaskSidebar
+        activeView={!activeListId && !activeAreaId ? activeView : null}
+        activeListId={activeListId}
+        activeAreaId={activeAreaId}
+        onViewChange={handleViewChange}
+        onListSelect={handleListSelect}
+        onAreaSelect={handleAreaSelect}
+      />
+
       <div className="flex flex-col flex-1 min-w-0">
-      {/* Header with view tabs */}
-      <div className="flex items-center justify-between px-6 h-14 border-b border-border flex-shrink-0">
-        <div className="flex items-center gap-1">
-          {views.map((view) => (
-            <button
-              key={view.key}
-              onClick={() => setActiveView(view.key)}
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-md text-body transition-colors duration-150',
-                activeView === view.key
-                  ? 'bg-primary/15 text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
-              )}
-            >
-              <view.icon className="h-4 w-4" />
-              <span className="font-medium">{view.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Task list */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-2xl mx-auto space-y-3">
+            <QuickAdd />
 
-      {/* Task list */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-2xl mx-auto space-y-3">
-          <QuickAdd />
-
-          {isLoading ? (
-            <div className="space-y-3 mt-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-14 rounded-lg bg-surface-raised animate-pulse" />
-              ))}
-            </div>
-          ) : activeTasks.length === 0 && doneTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Inbox className="h-10 w-10 text-muted-foreground/30 mb-3" />
-              <p className="text-body-medium text-muted-foreground">
-                {activeView === 'inbox' ? 'Inbox is empty' : 'No tasks'}
-              </p>
-              <p className="text-caption text-muted-foreground/60 mt-1">
-                {activeView === 'inbox'
-                  ? 'Tasks without a list or area show up here'
-                  : 'Add a task above to get started'}
-              </p>
-            </div>
-          ) : (
-            <>
-              {activeTasks.length > 0 && (
-                <div className="space-y-2 mt-2">
-                  {activeTasks.map((task: any) => (
-                    <TaskRow
-                      key={task.id}
-                      task={task}
-                      onComplete={(id) => complete.mutate({ id })}
-                      onClick={(id) => setSelectedTaskId(id)}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {doneTasks.length > 0 && (
-                <div className="mt-6">
-                  <button
-                    className="text-caption text-muted-foreground hover:text-foreground transition-colors mb-2"
-                    onClick={() => {}} // TODO: toggle visibility
-                  >
-                    Completed ({doneTasks.length})
-                  </button>
-                  <div className="space-y-2">
-                    {doneTasks.map((task: any) => (
+            {isLoading ? (
+              <div className="space-y-3 mt-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-14 rounded-lg bg-surface-raised animate-pulse" />
+                ))}
+              </div>
+            ) : activeTasks.length === 0 && doneTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Inbox className="h-10 w-10 text-muted-foreground/30 mb-3" />
+                <p className="text-body-medium text-muted-foreground">
+                  {activeView === 'inbox' && !activeListId && !activeAreaId ? 'Inbox is empty' : 'No tasks'}
+                </p>
+                <p className="text-caption text-muted-foreground/60 mt-1">
+                  {activeView === 'inbox' && !activeListId && !activeAreaId
+                    ? 'Tasks without a list or area show up here'
+                    : 'Add a task above to get started'}
+                </p>
+              </div>
+            ) : (
+              <>
+                {activeTasks.length > 0 && (
+                  <div className="space-y-2 mt-2">
+                    {activeTasks.map((task: any) => (
                       <TaskRow
                         key={task.id}
                         task={task}
@@ -110,12 +105,32 @@ export default function TasksPage() {
                       />
                     ))}
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                )}
+
+                {doneTasks.length > 0 && (
+                  <div className="mt-6">
+                    <button
+                      className="text-caption text-muted-foreground hover:text-foreground transition-colors mb-2"
+                      onClick={() => {}}
+                    >
+                      Completed ({doneTasks.length})
+                    </button>
+                    <div className="space-y-2">
+                      {doneTasks.map((task: any) => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          onComplete={(id) => complete.mutate({ id })}
+                          onClick={(id) => setSelectedTaskId(id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
       </div>
 
       {selectedTaskId && (
