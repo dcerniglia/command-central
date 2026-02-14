@@ -5,6 +5,7 @@ import { Inbox } from 'lucide-react';
 import TaskRow from '@/components/tasks/TaskRow';
 import TaskDetail from '@/components/tasks/TaskDetail';
 import TaskSidebar from '@/components/tasks/TaskSidebar';
+import SortableTaskList from '@/components/tasks/SortableTaskList';
 import QuickAdd from '@/components/tasks/QuickAdd';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
@@ -29,6 +30,10 @@ export default function TasksPage() {
   const utils = trpc.useUtils();
 
   const complete = trpc.tasks.complete.useMutation({
+    onSuccess: () => utils.tasks.list.invalidate(),
+  });
+
+  const reorder = trpc.tasks.reorder.useMutation({
     onSuccess: () => utils.tasks.list.invalidate(),
   });
 
@@ -95,15 +100,13 @@ export default function TasksPage() {
             ) : (
               <>
                 {activeTasks.length > 0 && (
-                  <div className="space-y-2 mt-2">
-                    {activeTasks.map((task: any) => (
-                      <TaskRow
-                        key={task.id}
-                        task={task}
-                        onComplete={(id) => complete.mutate({ id })}
-                        onClick={(id) => setSelectedTaskId(id)}
-                      />
-                    ))}
+                  <div className="mt-2">
+                    <SortableTaskList
+                      tasks={activeTasks}
+                      onComplete={(id) => complete.mutate({ id })}
+                      onClick={(id) => setSelectedTaskId(id)}
+                      onReorder={(items) => reorder.mutate({ items })}
+                    />
                   </div>
                 )}
 
