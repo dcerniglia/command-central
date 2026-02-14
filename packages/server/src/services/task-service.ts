@@ -58,7 +58,7 @@ export class TaskService {
 
     // Handle recurrence — spawn next occurrence
     if (task.recurrenceRule && task.dueDate) {
-      const nextDate = this.computeNextOccurrence(task.dueDate, task.recurrenceRule);
+      const nextDate = computeNextOccurrence(task.dueDate, task.recurrenceRule);
       if (nextDate) {
         await this.taskRepo.create({
           title: task.title,
@@ -86,20 +86,22 @@ export class TaskService {
     await this.taskRepo.updateSortOrders(items);
   }
 
-  private computeNextOccurrence(currentDueDate: string, rrule: string): string | null {
-    // Simple RRULE parsing for DAILY, WEEKLY, MONTHLY
-    const current = new Date(currentDueDate);
+}
 
-    if (rrule.includes('FREQ=DAILY')) {
-      current.setDate(current.getDate() + 1);
-    } else if (rrule.includes('FREQ=WEEKLY')) {
-      current.setDate(current.getDate() + 7);
-    } else if (rrule.includes('FREQ=MONTHLY')) {
-      current.setMonth(current.getMonth() + 1);
-    } else {
-      return null;
-    }
+/** Compute the next occurrence date from a due date and RRULE string. */
+export function computeNextOccurrence(currentDueDate: string, rrule: string): string | null {
+  // Simple RRULE parsing for DAILY, WEEKLY, MONTHLY
+  const current = new Date(currentDueDate + 'T00:00:00');
 
-    return current.toISOString().split('T')[0];
+  if (rrule.includes('FREQ=DAILY')) {
+    current.setDate(current.getDate() + 1);
+  } else if (rrule.includes('FREQ=WEEKLY')) {
+    current.setDate(current.getDate() + 7);
+  } else if (rrule.includes('FREQ=MONTHLY')) {
+    current.setMonth(current.getMonth() + 1);
+  } else {
+    return null;
   }
+
+  return current.toISOString().split('T')[0];
 }

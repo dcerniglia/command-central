@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Calendar, Flag, FolderOpen, MapPin, Layers } from 'lucide-react';
+import { X, Trash2, Calendar, Flag, FolderOpen, MapPin, Layers, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
@@ -31,6 +31,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const [listId, setListId] = useState<string | null>(null);
   const [areaId, setAreaId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null);
 
   useEffect(() => {
     if (task) {
@@ -41,6 +42,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       setListId(task.listId ?? null);
       setAreaId(task.areaId ?? null);
       setProjectId(task.projectId ?? null);
+      setRecurrenceRule(task.recurrenceRule ?? null);
     }
   }, [task]);
 
@@ -142,6 +144,25 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               }}
               className="flex-1 bg-transparent text-body text-foreground focus:outline-none [color-scheme:dark]"
             />
+          </div>
+
+          {/* Recurrence */}
+          <div className="flex items-center gap-3">
+            <Repeat className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <select
+              value={recurrenceRule ?? ''}
+              onChange={(e) => {
+                const val = e.target.value || null;
+                setRecurrenceRule(val);
+                save({ recurrenceRule: val });
+              }}
+              className="flex-1 bg-transparent text-body text-foreground focus:outline-none"
+            >
+              <option value="">No repeat</option>
+              <option value="FREQ=DAILY">Daily</option>
+              <option value="FREQ=WEEKLY">Weekly</option>
+              <option value="FREQ=MONTHLY">Monthly</option>
+            </select>
           </div>
 
           {/* Priority */}

@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { useState, useRef, useMemo } from 'react';
 import { trpc } from '@/lib/trpc';
 import { Inbox } from 'lucide-react';
 import TaskRow from '@/components/tasks/TaskRow';
 import TaskDetail from '@/components/tasks/TaskDetail';
 import TaskSidebar from '@/components/tasks/TaskSidebar';
-import QuickAdd from '@/components/tasks/QuickAdd';
+import SortableTaskList from '@/components/tasks/SortableTaskList';
+import QuickAdd, { type QuickAddHandle } from '@/components/tasks/QuickAdd';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
 
@@ -15,6 +16,13 @@ export default function TasksPage() {
   const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const quickAddRef = useRef<QuickAddHandle>(null);
+
+  useKeyboardShortcuts(useMemo(() => ({
+    'n': () => quickAddRef.current?.focus(),
+    'Escape': () => setSelectedTaskId(null),
+  }), []));
 
   // Build filter based on what's selected
   const filter: Record<string, any> = {};
@@ -32,6 +40,10 @@ export default function TasksPage() {
   const utils = trpc.useUtils();
 
   const complete = trpc.tasks.complete.useMutation({
+    onSuccess: () => utils.tasks.list.invalidate(),
+  });
+
+  const reorder = trpc.tasks.reorder.useMutation({
     onSuccess: () => utils.tasks.list.invalidate(),
   });
 
@@ -86,7 +98,7 @@ export default function TasksPage() {
         {/* Task list */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto space-y-3">
-            <QuickAdd />
+            <QuickAdd ref={quickAddRef} />
 
             {isLoading ? (
               <div className="space-y-3 mt-4">
@@ -109,15 +121,13 @@ export default function TasksPage() {
             ) : (
               <>
                 {activeTasks.length > 0 && (
-                  <div className="space-y-2 mt-2">
-                    {activeTasks.map((task: any) => (
-                      <TaskRow
-                        key={task.id}
-                        task={task}
-                        onComplete={(id) => complete.mutate({ id })}
-                        onClick={(id) => setSelectedTaskId(id)}
-                      />
-                    ))}
+                  <div className="mt-2">
+                    <SortableTaskList
+                      tasks={activeTasks}
+                      onComplete={(id) => complete.mutate({ id })}
+                      onClick={(id) => setSelectedTaskId(id)}
+                      onReorder={(items) => reorder.mutate({ items })}
+                    />
                   </div>
                 )}
 
@@ -125,20 +135,22 @@ export default function TasksPage() {
                   <div className="mt-6">
                     <button
                       className="text-caption text-muted-foreground hover:text-foreground transition-colors mb-2"
-                      onClick={() => {}}
+                      onClick={() => setShowCompleted(!showCompleted)}
                     >
-                      Completed ({doneTasks.length})
+                      {showCompleted ? '▾' : '▸'} Completed ({doneTasks.length})
                     </button>
-                    <div className="space-y-2">
-                      {doneTasks.map((task: any) => (
-                        <TaskRow
-                          key={task.id}
-                          task={task}
-                          onComplete={(id) => complete.mutate({ id })}
-                          onClick={(id) => setSelectedTaskId(id)}
-                        />
-                      ))}
-                    </div>
+                    {showCompleted && (
+                      <div className="space-y-2">
+                        {doneTasks.map((task: any) => (
+                          <TaskRow
+                            key={task.id}
+                            task={task}
+                            onComplete={(id) => complete.mutate({ id })}
+                            onClick={(id) => setSelectedTaskId(id)}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </>

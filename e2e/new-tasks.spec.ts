@@ -50,9 +50,9 @@ test.describe('Task Management', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByText('Task to complete')).toBeVisible();
 
-    // Click the checkbox (first button in the task row)
+    // Click the checkbox (rounded-full button, not the drag handle)
     const taskRow = page.getByText('Task to complete').locator('xpath=ancestor::div[contains(@class,"group")]');
-    await taskRow.locator('button').first().click();
+    await taskRow.locator('button.rounded-full').click();
 
     // Task should move to completed section
     await expect(page.getByText(/Completed \(\d+\)/)).toBeVisible({ timeout: 10000 });
