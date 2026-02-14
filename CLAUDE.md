@@ -126,6 +126,33 @@ Every feature must have well-documented associated tests. Tests are not optional
 - Keep first line under 72 characters
 - Do NOT use conventional commits (feat:, fix:), past tense, or ALL CAPS
 
+### Branching & PR Workflow
+
+- `main` = production branch (protected, requires PR approval + CI pass)
+- `develop` = staging/integration branch (protected, requires PR approval + CI pass)
+- Feature branches: `feature/<name>` branched from `develop`
+- Every feature gets a PR to `develop` with associated GitHub Issue
+- PRs require passing CI (typecheck → unit tests → build → e2e) before merge
+- After accumulating features on `develop`, PR to `main` for production release
+
+### Deployment
+
+- **Host**: Railway (server + client in single container)
+- **Database**: Neon Postgres (serverless, free tier)
+- **Build**: Multi-stage Dockerfile (build → production)
+- **Health check**: `/trpc/auth.hasUsers`
+- **Environment variables**: DATABASE_URL, NODE_ENV, PORT, APP_URL, WEBAUTHN_RP_ID, WEBAUTHN_ORIGIN
+- In production, server serves the built client SPA as static files
+
+### Design System
+
+- **Theme**: Dark-first, zinc palette (neutral-900 base)
+- **Typography**: Inter font, semantic classes (text-display, text-heading-3, text-body, text-caption, text-overline)
+- **Colors**: Semantic tokens — status-info (blue), status-urgency-low (amber), status-urgency-high (rose), escalation-3 (red for overdue)
+- **Surfaces**: Layered — surface-root → surface-raised → surface-overlay
+- **ADHD-informed UX**: Surface what matters, reduce decision fatigue, clear visual hierarchy
+- **Components**: shadcn/ui (New York style) as base, extended with custom task-specific components
+
 ## What NOT To Do
 
 - No Sparkshaft imports — this is independent
