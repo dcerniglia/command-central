@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Calendar, CalendarCheck, Flag, FolderOpen, MapPin, Layers, Repeat, ExternalLink, CircleDot, Clock } from 'lucide-react';
+import { X, Trash2, Flag, FolderOpen, MapPin, Layers, Repeat, ExternalLink, CircleDot, Clock, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
+import MarkdownNotes from './MarkdownNotes';
+import { DatePicker } from '@/components/ui/date-picker';
 
 interface TaskDetailProps {
   taskId: string;
@@ -38,6 +40,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const [status, setStatus] = useState('todo');
   const [startDate, setStartDate] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
   const [priority, setPriority] = useState(0);
   const [estimateMinutes, setEstimateMinutes] = useState<number | null>(null);
   const [listId, setListId] = useState<string | null>(null);
@@ -52,6 +55,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       setStatus(task.status);
       setStartDate(task.startDate ? new Date(task.startDate).toISOString().split('T')[0] : '');
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
+      setDueTime(task.dueTime ?? '');
       setPriority(task.priority);
       setEstimateMinutes(task.estimateMinutes ?? null);
       setListId(task.listId ?? null);
@@ -154,14 +158,12 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           <p className="text-caption text-muted-foreground/60">Title synced from Jira — edit in Jira to update</p>
         )}
 
-        {/* Notes */}
-        <textarea
+        {/* Notes (markdown) */}
+        <MarkdownNotes
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={setNotes}
           onBlur={() => notes !== (task.notes ?? '') && save({ notes: notes || null })}
-          placeholder="Add notes..."
-          rows={4}
-          className="w-full bg-transparent text-body text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none"
+          placeholder="Add notes (markdown supported)..."
         />
 
         {/* Metadata fields */}
@@ -191,33 +193,38 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           </div>
 
           {/* Start date */}
-          <div className="flex items-center gap-3">
-            <CalendarCheck className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                save({ startDate: e.target.value || null });
-              }}
-              className="flex-1 bg-transparent text-body text-foreground focus:outline-none [color-scheme:dark]"
-            />
-            {!startDate && <span className="text-caption text-muted-foreground/50">Start date</span>}
-          </div>
+          <DatePicker
+            value={startDate}
+            onChange={(val) => {
+              setStartDate(val);
+              save({ startDate: val || null });
+            }}
+            placeholder="Start date"
+          />
 
           {/* Due date */}
+          <DatePicker
+            value={dueDate}
+            onChange={(val) => {
+              setDueDate(val);
+              save({ dueDate: val || null });
+            }}
+            placeholder="Due date"
+          />
+
+          {/* Due time */}
           <div className="flex items-center gap-3">
-            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <Timer className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <input
-              type="date"
-              value={dueDate}
+              type="time"
+              value={dueTime}
               onChange={(e) => {
-                setDueDate(e.target.value);
-                save({ dueDate: e.target.value || null });
+                setDueTime(e.target.value);
+                save({ dueTime: e.target.value || null });
               }}
               className="flex-1 bg-transparent text-body text-foreground focus:outline-none [color-scheme:dark]"
             />
-            {!dueDate && <span className="text-caption text-muted-foreground/50">Due date</span>}
+            {!dueTime && <span className="text-caption text-muted-foreground/50">Due time</span>}
           </div>
 
           {/* Estimate */}
