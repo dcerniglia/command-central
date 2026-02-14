@@ -47,21 +47,11 @@ test.describe('Task Management', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByText('Task to complete')).toBeVisible();
 
-    // Get the task ID from the API and complete it directly (more reliable than clicking checkbox)
-    const listRes = await page.request.get(`${TRPC}/tasks.list?input=${encodeURIComponent(JSON.stringify({ view: 'inbox' }))}`);
-    const listBody = await listRes.json();
-    const tasks = listBody?.result?.data ?? [];
-    const target = tasks.find((t: any) => t.title === 'Task to complete');
-    expect(target).toBeTruthy();
+    // Click the checkbox (rounded-full button, not the drag handle)
+    const taskRow = page.getByText('Task to complete').locator('xpath=ancestor::div[contains(@class,"group")]');
+    await taskRow.locator('button.rounded-full').click();
 
-    const completeRes = await page.request.post(`${TRPC}/tasks.complete`, {
-      data: { id: target.id },
-      headers: { 'content-type': 'application/json' },
-    });
-    expect(completeRes.ok()).toBeTruthy();
-
-    // Reload and verify task is in completed section
-    await page.reload();
+    // Task should move to completed section
     await expect(page.getByText(/Completed \(\d+\)/)).toBeVisible({ timeout: 10000 });
   });
 
