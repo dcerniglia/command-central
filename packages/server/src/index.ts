@@ -15,6 +15,7 @@ import { setupTerminalWebSocket } from './services/terminal-ws.js';
 import { createContainer } from './di/container.js';
 import { appRouter } from './trpc/router.js';
 import { createContextFactory } from './trpc/context.js';
+import { createWebhookRouter } from './routes/webhooks.js';
 
 // Legacy imports
 import db from './db.js';
@@ -50,6 +51,9 @@ app.use(
     createContext: createContextFactory(container),
   }),
 );
+
+// Webhook routes (no auth cookie — secret-based)
+app.use('/api/webhooks', createWebhookRouter(container));
 
 // Legacy Express routes
 app.use('/api/projects', projectsRouter);
