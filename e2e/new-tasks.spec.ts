@@ -8,7 +8,10 @@ async function login(page: Page) {
     data: { username: 'e2e-test-user' },
     headers: { 'content-type': 'application/json' },
   });
-  expect(res.ok()).toBeTruthy();
+  if (!res.ok()) {
+    const body = await res.text();
+    throw new Error(`devLogin failed (${res.status()}): ${body}`);
+  }
 }
 
 /** Clean up tasks via tRPC */
