@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Calendar, Flag, FolderOpen, MapPin } from 'lucide-react';
+import { X, Trash2, Calendar, Flag, FolderOpen, MapPin, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
@@ -21,6 +21,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const { data: task, isLoading } = trpc.tasks.get.useQuery({ id: taskId });
   const { data: lists = [] } = trpc.tasks.lists.list.useQuery();
   const { data: areas = [] } = trpc.tasks.areas.list.useQuery();
+  const { data: projects = [] } = trpc.tasks.projects.list.useQuery();
   const { data: checklist = [] } = trpc.tasks.checklist.list.useQuery({ taskId });
 
   const [title, setTitle] = useState('');
@@ -29,6 +30,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const [priority, setPriority] = useState(0);
   const [listId, setListId] = useState<string | null>(null);
   const [areaId, setAreaId] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     if (task) {
@@ -38,6 +40,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       setPriority(task.priority);
       setListId(task.listId ?? null);
       setAreaId(task.areaId ?? null);
+      setProjectId(task.projectId ?? null);
     }
   }, [task]);
 
@@ -199,6 +202,25 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               <option value="">No area</option>
               {areas.map((a: any) => (
                 <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Project */}
+          <div className="flex items-center gap-3">
+            <Layers className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <select
+              value={projectId ?? ''}
+              onChange={(e) => {
+                const val = e.target.value || null;
+                setProjectId(val);
+                save({ projectId: val });
+              }}
+              className="flex-1 bg-transparent text-body text-foreground focus:outline-none"
+            >
+              <option value="">No project</option>
+              {projects.map((p: any) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </div>

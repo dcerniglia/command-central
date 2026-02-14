@@ -13,12 +13,15 @@ export default function TasksPage() {
   const [activeView, setActiveView] = useState<ViewKey>('inbox');
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   // Build filter based on what's selected
   const filter: Record<string, any> = {};
   if (activeListId) {
     filter.listId = activeListId;
+  } else if (activeProjectId) {
+    filter.projectId = activeProjectId;
   } else if (activeAreaId) {
     filter.areaId = activeAreaId;
   } else {
@@ -39,16 +42,25 @@ export default function TasksPage() {
     setActiveView(view);
     setActiveListId(null);
     setActiveAreaId(null);
+    setActiveProjectId(null);
   }
 
   function handleListSelect(listId: string) {
     setActiveListId(listId);
     setActiveAreaId(null);
+    setActiveProjectId(null);
   }
 
   function handleAreaSelect(areaId: string) {
     setActiveAreaId(areaId);
     setActiveListId(null);
+    setActiveProjectId(null);
+  }
+
+  function handleProjectSelect(projectId: string) {
+    setActiveProjectId(projectId);
+    setActiveListId(null);
+    setActiveAreaId(null);
   }
 
   // Determine header title
@@ -60,12 +72,14 @@ export default function TasksPage() {
   return (
     <div className="flex h-full">
       <TaskSidebar
-        activeView={!activeListId && !activeAreaId ? activeView : null}
+        activeView={!activeListId && !activeAreaId && !activeProjectId ? activeView : null}
         activeListId={activeListId}
         activeAreaId={activeAreaId}
+        activeProjectId={activeProjectId}
         onViewChange={handleViewChange}
         onListSelect={handleListSelect}
         onAreaSelect={handleAreaSelect}
+        onProjectSelect={handleProjectSelect}
       />
 
       <div className="flex flex-col flex-1 min-w-0">
