@@ -6,6 +6,7 @@ import { ListRepository } from '../../services/list-repository.js';
 import { AreaRepository } from '../../services/area-repository.js';
 import { TagRepository } from '../../services/tag-repository.js';
 import { ChecklistRepository } from '../../services/checklist-repository.js';
+import { ProjectRepository } from '../../services/project-repository.js';
 import {
   CreateTaskInput,
   UpdateTaskInput,
@@ -16,6 +17,8 @@ import {
   CreateAreaInput,
   UpdateAreaInput,
   CreateTagInput,
+  CreateProjectInput,
+  UpdateProjectInput,
   CreateChecklistInput,
   UpdateChecklistInput,
 } from '@cc/shared';
@@ -110,6 +113,31 @@ export const tasksRouter = router({
     }),
     delete: protectedProcedure.input(z.object({ id: z.string().uuid() })).mutation(async ({ ctx, input }) => {
       const repo = ctx.container.get<TagRepository>(SYMBOLS.TagRepository);
+      return repo.delete(input.id);
+    }),
+  }),
+
+  // Projects
+  projects: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const repo = ctx.container.get<ProjectRepository>(SYMBOLS.ProjectRepository);
+      return repo.list();
+    }),
+    get: protectedProcedure.input(z.object({ id: z.string().uuid() })).query(async ({ ctx, input }) => {
+      const repo = ctx.container.get<ProjectRepository>(SYMBOLS.ProjectRepository);
+      return repo.getById(input.id);
+    }),
+    create: protectedProcedure.input(CreateProjectInput).mutation(async ({ ctx, input }) => {
+      const repo = ctx.container.get<ProjectRepository>(SYMBOLS.ProjectRepository);
+      return repo.create(input);
+    }),
+    update: protectedProcedure.input(UpdateProjectInput).mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      const repo = ctx.container.get<ProjectRepository>(SYMBOLS.ProjectRepository);
+      return repo.update(id, data);
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.string().uuid() })).mutation(async ({ ctx, input }) => {
+      const repo = ctx.container.get<ProjectRepository>(SYMBOLS.ProjectRepository);
       return repo.delete(input.id);
     }),
   }),
