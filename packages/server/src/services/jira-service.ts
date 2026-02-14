@@ -16,8 +16,10 @@ export interface JiraIssue {
   url: string;
 }
 
-function mapStatusCategory(category: string): 'todo' | 'done' {
-  return category === 'done' ? 'done' : 'todo';
+function mapStatusCategory(category: string): 'todo' | 'in_progress' | 'done' {
+  if (category === 'done') return 'done';
+  if (category === 'indeterminate') return 'in_progress';
+  return 'todo';
 }
 
 function mapPriority(jiraPriority: string): number {

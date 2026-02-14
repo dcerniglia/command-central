@@ -45,6 +45,12 @@ function getDueLabel(dueDate: string | null | undefined): { label: string; color
   return { label: due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: 'text-muted-foreground' };
 }
 
+const statusBadges: Record<string, { label: string; color: string }> = {
+  in_progress: { label: 'In Progress', color: 'text-status-info bg-status-info/10' },
+  blocked: { label: 'Blocked', color: 'text-status-urgency-high bg-status-urgency-high/10' },
+  waiting: { label: 'Waiting', color: 'text-status-urgency-low bg-status-urgency-low/10' },
+};
+
 function getPriorityIndicator(priority: number) {
   if (priority === 0) return null;
   const colors = ['', 'bg-status-info', 'bg-status-urgency-low', 'bg-status-urgency-high'];
@@ -90,6 +96,11 @@ const TaskRow = forwardRef<HTMLDivElement, TaskRowProps>(function TaskRow(
       </div>
 
       <div className="flex items-center gap-2">
+        {statusBadges[task.status] && (
+          <span className={cn('px-1.5 py-0.5 rounded text-[11px] font-medium', statusBadges[task.status].color)}>
+            {statusBadges[task.status].label}
+          </span>
+        )}
         {task.source === 'jira' && task.externalKey && (
           <span className="flex items-center gap-1 text-caption text-muted-foreground/70">
             <span className="font-mono text-[11px]">{task.externalKey}</span>

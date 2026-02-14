@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Calendar, Flag, FolderOpen, MapPin, Layers, Repeat, ExternalLink } from 'lucide-react';
+import { X, Trash2, Calendar, CalendarCheck, Flag, FolderOpen, MapPin, Layers, Repeat, ExternalLink, CircleDot, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
@@ -8,6 +8,15 @@ interface TaskDetailProps {
   taskId: string;
   onClose: () => void;
 }
+
+const statusOptions = [
+  { value: 'todo', label: 'To Do', color: 'text-muted-foreground' },
+  { value: 'in_progress', label: 'In Progress', color: 'text-status-info' },
+  { value: 'blocked', label: 'Blocked', color: 'text-status-urgency-high' },
+  { value: 'waiting', label: 'Waiting', color: 'text-status-urgency-low' },
+  { value: 'done', label: 'Done', color: 'text-green-500' },
+  { value: 'cancelled', label: 'Cancelled', color: 'text-muted-foreground/50' },
+];
 
 const priorityOptions = [
   { value: 0, label: 'None', color: '' },
@@ -26,8 +35,11 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
+  const [status, setStatus] = useState('todo');
+  const [startDate, setStartDate] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState(0);
+  const [estimateMinutes, setEstimateMinutes] = useState<number | null>(null);
   const [listId, setListId] = useState<string | null>(null);
   const [areaId, setAreaId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
@@ -37,8 +49,11 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     if (task) {
       setTitle(task.title);
       setNotes(task.notes ?? '');
+      setStatus(task.status);
+      setStartDate(task.startDate ? new Date(task.startDate).toISOString().split('T')[0] : '');
       setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
       setPriority(task.priority);
+      setEstimateMinutes(task.estimateMinutes ?? null);
       setListId(task.listId ?? null);
       setAreaId(task.areaId ?? null);
       setProjectId(task.projectId ?? null);
@@ -151,6 +166,45 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
         {/* Metadata fields */}
         <div className="space-y-3 pt-2 border-t border-border">
+          {/* Status */}
+          <div className="flex items-center gap-3">
+            <CircleDot className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex items-center gap-1 flex-wrap">
+              {statusOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setStatus(opt.value);
+                    save({ status: opt.value });
+                  }}
+                  className={cn(
+                    'px-2 py-1 rounded text-caption transition-colors',
+                    status === opt.value
+                      ? `bg-primary/15 ${opt.color}`
+                      : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Start date */}
+          <div className="flex items-center gap-3">
+            <CalendarCheck className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                save({ startDate: e.target.value || null });
+              }}
+              className="flex-1 bg-transparent text-body text-foreground focus:outline-none [color-scheme:dark]"
+            />
+            {!startDate && <span className="text-caption text-muted-foreground/50">Start date</span>}
+          </div>
+
           {/* Due date */}
           <div className="flex items-center gap-3">
             <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -163,6 +217,32 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               }}
               className="flex-1 bg-transparent text-body text-foreground focus:outline-none [color-scheme:dark]"
             />
+            {!dueDate && <span className="text-caption text-muted-foreground/50">Due date</span>}
+          </div>
+
+          {/* Estimate */}
+          <div className="flex items-center gap-3">
+            <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <input
+              type="number"
+              min={0}
+              value={estimateMinutes ?? ''}
+              onChange={(e) => {
+                const val = e.target.value ? parseInt(e.target.value, 10) : null;
+                setEstimateMinutes(val);
+              }}
+              onBlur={() => {
+                const current = task.estimateMinutes ?? null;
+                if (estimateMinutes !== current) save({ estimateMinutes });
+              }}
+              placeholder="Estimate (min)"
+              className="flex-1 bg-transparent text-body text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+            />
+            {estimateMinutes && (
+              <span className="text-caption text-muted-foreground">
+                {estimateMinutes >= 60 ? `${Math.floor(estimateMinutes / 60)}h ${estimateMinutes % 60}m` : `${estimateMinutes}m`}
+              </span>
+            )}
           </div>
 
           {/* Recurrence */}

@@ -21,11 +21,12 @@ export class TaskService {
   }
 
   async create(input: CreateTaskInput) {
-    const { tagIds, dueDate, ...rest } = input;
+    const { tagIds, dueDate, startDate, ...rest } = input;
     const sortOrder = await this.taskRepo.getMaxSortOrder(rest.listId, rest.areaId) + 1;
     const task = await this.taskRepo.create({
       ...rest,
       sortOrder,
+      startDate: startDate ? startDate.toISOString().split('T')[0] : null,
       dueDate: dueDate ? dueDate.toISOString().split('T')[0] : null,
     });
     if (tagIds.length > 0) {
@@ -35,8 +36,11 @@ export class TaskService {
   }
 
   async update(input: UpdateTaskInput) {
-    const { id, tagIds, dueDate, ...rest } = input;
+    const { id, tagIds, dueDate, startDate, ...rest } = input;
     const data: Record<string, any> = { ...rest };
+    if (startDate !== undefined) {
+      data.startDate = startDate ? startDate.toISOString().split('T')[0] : null;
+    }
     if (dueDate !== undefined) {
       data.dueDate = dueDate ? dueDate.toISOString().split('T')[0] : null;
     }
@@ -50,6 +54,14 @@ export class TaskService {
   async complete(id: string) {
     const task = await this.taskRepo.getById(id);
     if (!task) throw new Error('Task not found');
+
+    // Toggle: if already done, reopen to todo
+    if (task.status === 'done') {
+      return this.taskRepo.update(id, {
+        status: 'todo',
+        completedAt: null,
+      });
+    }
 
     const completed = await this.taskRepo.update(id, {
       status: 'done',

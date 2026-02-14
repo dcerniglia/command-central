@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Enums
-export const TaskStatus = z.enum(['todo', 'done', 'cancelled']);
+export const TaskStatus = z.enum(['todo', 'in_progress', 'blocked', 'waiting', 'done', 'cancelled']);
 export type TaskStatus = z.infer<typeof TaskStatus>;
 
 export const ProjectStatus = z.enum(['active', 'completed', 'on_hold', 'archived']);
@@ -76,8 +76,11 @@ export const TaskItem = z.object({
   projectId: z.string().uuid().nullish(),
   status: TaskStatus.default('todo'),
   priority: TaskPriority.default(0),
+  startDate: z.coerce.date().nullish(),
   dueDate: z.coerce.date().nullish(),
   dueTime: z.string().nullish(), // HH:mm format
+  estimateMinutes: z.number().int().nullish(),
+  timeSpentMinutes: z.number().int().nullish(),
   completedAt: z.coerce.date().nullish(),
   sortOrder: z.number().int().default(0),
   recurrenceRule: z.string().nullish(), // iCal RRULE
@@ -102,8 +105,10 @@ export const CreateTaskInput = z.object({
   areaId: z.string().uuid().nullish(),
   projectId: z.string().uuid().nullish(),
   priority: TaskPriority.default(0),
+  startDate: z.coerce.date().nullish(),
   dueDate: z.coerce.date().nullish(),
   dueTime: z.string().nullish(),
+  estimateMinutes: z.number().int().nullish(),
   recurrenceRule: z.string().nullish(),
   tagIds: z.array(z.string().uuid()).default([]),
 });
@@ -118,8 +123,11 @@ export const UpdateTaskInput = z.object({
   projectId: z.string().uuid().nullish(),
   status: TaskStatus.optional(),
   priority: TaskPriority.optional(),
+  startDate: z.coerce.date().nullish(),
   dueDate: z.coerce.date().nullish(),
   dueTime: z.string().nullish(),
+  estimateMinutes: z.number().int().nullish(),
+  timeSpentMinutes: z.number().int().nullish(),
   recurrenceRule: z.string().nullish(),
   tagIds: z.array(z.string().uuid()).optional(),
 });
