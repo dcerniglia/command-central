@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import { Inbox, CalendarDays, CalendarClock, ListChecks } from 'lucide-react';
 import TaskRow from '@/components/tasks/TaskRow';
+import TaskDetail from '@/components/tasks/TaskDetail';
 import QuickAdd from '@/components/tasks/QuickAdd';
 
 const views = [
@@ -30,7 +31,8 @@ export default function TasksPage() {
   const doneTasks = tasks.filter((t: any) => t.status === 'done');
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full">
+      <div className="flex flex-col flex-1 min-w-0">
       {/* Header with view tabs */}
       <div className="flex items-center justify-between px-6 h-14 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-1">
@@ -114,6 +116,11 @@ export default function TasksPage() {
           )}
         </div>
       </div>
+      </div>
+
+      {selectedTaskId && (
+        <TaskDetail taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
+      )}
     </div>
   );
 }
