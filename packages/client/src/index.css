@@ -3,11 +3,113 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-gray-900 text-gray-100 antialiased;
+  :root {
+    /* Light mode exists but dark is primary — these are fallbacks */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 263 70% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 263 70% 50%;
+    --radius: 0.5rem;
+
+    /* Surfaces */
+    --surface-root: 240 33% 4%;
+    --surface-base: 222 47% 11%;
+    --surface-raised: 217 33% 17%;
+    --surface-overlay: 215 25% 27%;
+    --surface-glass: 217 33% 17%;
+
+    /* Semantic */
+    --status-urgency-low: 38 92% 50%;
+    --status-urgency-high: 0 84% 60%;
+    --status-positive: 160 84% 39%;
+    --status-info: 198 93% 60%;
+    --status-warning: 45 93% 56%;
+
+    /* Escalation */
+    --escalation-1: 43 96% 56%;
+    --escalation-2: 38 92% 50%;
+    --escalation-3: 25 95% 53%;
+    --escalation-4: 0 84% 60%;
+
+    /* Module accents */
+    --module-fitness: 173 58% 39%;
+    --module-projects: 234 89% 74%;
+
+    /* Sidebar */
+    --sidebar-background: 240 33% 4%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 263 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 263 70% 50%;
   }
 
-::-webkit-scrollbar {
+  .dark {
+    --background: 240 33% 4%;
+    --foreground: 210 40% 98%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 263 70% 50%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 263 70% 50%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 263 70% 50%;
+
+    /* Surfaces */
+    --surface-root: 240 33% 4%;
+    --surface-base: 222 47% 11%;
+    --surface-raised: 217 33% 17%;
+    --surface-overlay: 215 25% 27%;
+
+    /* Sidebar */
+    --sidebar-background: 240 33% 4%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 263 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 263 70% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
@@ -17,11 +119,24 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #374151;
-    border-radius: 3px;
+    background: hsl(var(--surface-overlay));
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #4b5563;
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+}
+
+/* Glass effect utility */
+@layer utilities {
+  .glass {
+    background: hsl(var(--surface-glass) / 0.75);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--surface-overlay) / 0.5);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.15);
   }
 }

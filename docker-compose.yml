@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: cc-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cc_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-command_central}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

@@ -8,21 +8,32 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@cc/shared": "workspace:*",
+    "@simplewebauthn/server": "^13.2.2",
+    "@trpc/server": "^11.10.0",
     "better-sqlite3": "^11.7.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.4",
+    "drizzle-orm": "^0.45.1",
     "express": "^4.21.1",
+    "inversify": "^7.11.0",
     "node-pty": "^1.1.0",
+    "postgres": "^3.4.8",
+    "reflect-metadata": "^0.2.2",
     "uuid": "^11.0.3",
-    "ws": "^8.19.0"
+    "ws": "^8.19.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/supertest": "^6.0.3",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
+    "drizzle-kit": "^0.31.9",
     "supertest": "^7.2.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
