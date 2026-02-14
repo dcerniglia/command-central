@@ -54,10 +54,8 @@ test.describe('Task Management', () => {
     const taskRow = page.getByText('Task to complete').locator('xpath=ancestor::div[contains(@class,"group")]');
     await taskRow.locator('button').first().click();
 
-    // Task should no longer be in the active list (it completed)
-    // Wait for the mutation to complete and re-render
-    await page.waitForTimeout(1000);
-    await expect(page.getByText('Task to complete')).not.toBeVisible();
+    // Task should move to completed section
+    await expect(page.getByText(/Completed \(\d+\)/)).toBeVisible({ timeout: 10000 });
   });
 
   test('can switch between smart views', async ({ page }) => {
