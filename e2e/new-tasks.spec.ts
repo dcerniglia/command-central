@@ -96,8 +96,9 @@ test.describe('Task Management', () => {
     await page.getByText('Original title').click();
     await expect(page.getByText('Task Detail')).toBeVisible();
 
-    // Edit the title input in the detail panel
-    const titleInput = page.locator('input[value="Original title"]');
+    // Edit the title — first input in the detail panel (after "Task Detail" header)
+    const detailPanel = page.getByText('Task Detail').locator('xpath=ancestor::div[contains(@class,"border-l")]');
+    const titleInput = detailPanel.locator('input').first();
     await titleInput.fill('Updated title');
     await titleInput.press('Enter');
 
