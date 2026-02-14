@@ -47,12 +47,13 @@ test.describe('Task Management', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByText('Task to complete')).toBeVisible();
 
-    // Click the checkbox (first button in the task row)
+    // Click the checkbox (round button next to task title, not the drag handle)
     const taskRow = page.getByText('Task to complete').locator('xpath=ancestor::div[contains(@class,"group")]');
-    await taskRow.locator('button').first().click();
+    // The checkbox is a round button (w-5 h-5 rounded-full) — use role or find by class
+    await taskRow.locator('button.rounded-full').click();
 
-    // Task should disappear from active list (moved to completed)
-    await expect(page.getByText('Task to complete')).not.toBeVisible({ timeout: 10000 });
+    // Task should move to collapsed completed section
+    await expect(page.getByText(/Completed \(\d+\)/)).toBeVisible({ timeout: 10000 });
   });
 
   test('can switch between smart views', async ({ page }) => {
