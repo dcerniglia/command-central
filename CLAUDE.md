@@ -64,6 +64,17 @@ Database tables are namespaced by module prefix (e.g. `task_items`, `task_lists`
 
 **GitHub Issues are the source of truth** for all tasks, planning, and project details. Not markdown files, not mental notes. Every decision, task, and piece of context gets captured in an issue or issue comment.
 
+### Idea Capture
+
+When David shares an idea (feature, module, improvement), **always capture it as a GitHub Issue** using the `/idea` skill. Don't let ideas slip by uncaptured. Use these labels:
+- `idea` — always applied
+- `module-idea` — new module concepts (fitness, finance, journal, etc.)
+- `feature-idea` — features within existing modules
+- `backlog` — default priority (unless David says otherwise)
+- `priority: now` / `priority: next` / `priority: later` — only if David specifies urgency
+
+Ideas are lightweight captures, not specs. Keep the issue brief and move on.
+
 ## Conventions
 
 ### Database
