@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify';
-import { eq, and, isNull, lte, gte, sql, asc } from 'drizzle-orm';
+import { eq, and, isNull, lte, gte, sql, asc, ne } from 'drizzle-orm';
 import { SYMBOLS } from '../di/symbols.js';
 import { taskItems, taskItemTags } from '../db/schema/tasks.js';
 import type { Database } from '../db/drizzle.js';
@@ -15,8 +15,8 @@ export class TaskRepository {
     if (filter.status) {
       conditions.push(eq(taskItems.status, filter.status));
     } else {
-      // Default: only show active tasks
-      conditions.push(eq(taskItems.status, 'todo'));
+      // Default: show todo and done (exclude cancelled)
+      conditions.push(ne(taskItems.status, 'cancelled'));
     }
 
     if (filter.listId) {
