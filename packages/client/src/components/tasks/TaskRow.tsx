@@ -1,19 +1,24 @@
+import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
-import { Star } from 'lucide-react';
+import { Star, GripVertical } from 'lucide-react';
 import TaskCheckbox from './TaskCheckbox';
 
+export interface TaskRowTask {
+  id: string;
+  title: string;
+  status: string;
+  priority: number;
+  dueDate?: string | null;
+  listId?: string | null;
+  areaId?: string | null;
+}
+
 interface TaskRowProps {
-  task: {
-    id: string;
-    title: string;
-    status: string;
-    priority: number;
-    dueDate?: string | null;
-    listId?: string | null;
-    areaId?: string | null;
-  };
+  task: TaskRowTask;
   onComplete: (id: string) => void;
   onClick: (id: string) => void;
+  dragHandleProps?: Record<string, any>;
+  style?: React.CSSProperties;
 }
 
 function getDueLabel(dueDate: string | null | undefined): { label: string; color: string } | null {
@@ -43,12 +48,17 @@ function getPriorityIndicator(priority: number) {
   return <div className={cn('w-2 h-2 rounded-full flex-shrink-0', colors[priority])} />;
 }
 
-export default function TaskRow({ task, onComplete, onClick }: TaskRowProps) {
+const TaskRow = forwardRef<HTMLDivElement, TaskRowProps>(function TaskRow(
+  { task, onComplete, onClick, dragHandleProps, style },
+  ref,
+) {
   const isDone = task.status === 'done';
   const dueInfo = getDueLabel(task.dueDate);
 
   return (
     <div
+      ref={ref}
+      style={style}
       onClick={() => onClick(task.id)}
       className={cn(
         'group flex items-center gap-3 px-4 py-3 rounded-lg border border-border',
@@ -56,6 +66,15 @@ export default function TaskRow({ task, onComplete, onClick }: TaskRowProps) {
         isDone && 'opacity-50',
       )}
     >
+      {dragHandleProps && (
+        <button
+          {...dragHandleProps}
+          className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground transition-colors -ml-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      )}
       <TaskCheckbox checked={isDone} onChange={() => onComplete(task.id)} />
 
       <div className="flex-1 min-w-0">
@@ -75,4 +94,6 @@ export default function TaskRow({ task, onComplete, onClick }: TaskRowProps) {
       </div>
     </div>
   );
-}
+});
+
+export default TaskRow;

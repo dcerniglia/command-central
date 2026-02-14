@@ -7,7 +7,7 @@ function setSessionCookie(ctx: any, sessionId: string, expiresAt: Date) {
   ctx.res.cookie('session', sessionId, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: false, // localhost
+    secure: process.env.NODE_ENV === 'production',
     expires: expiresAt,
     path: '/',
   });
