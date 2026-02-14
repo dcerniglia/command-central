@@ -5,6 +5,8 @@
     "outDir": "dist",
     "noEmit": true,
     "baseUrl": ".",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "paths": {
       "@/*": ["./src/*"]
     }
