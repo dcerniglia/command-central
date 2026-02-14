@@ -95,6 +95,31 @@ Database tables are namespaced by module prefix (e.g. `task_items`, `task_lists`
 - Single user now, but built properly to support multiple users later
 - HTTP-only secure session cookies stored in Postgres
 
+### Testing
+
+Every feature must have well-documented associated tests. Tests are not optional — they ship with the feature.
+
+**Stack:**
+- **Unit/integration tests**: Vitest (all packages)
+- **Component tests**: Vitest + React Testing Library + jsdom (client)
+- **E2E tests**: Playwright (root `/e2e/` directory)
+- **HTTP route tests**: Vitest + supertest (server)
+
+**Conventions:**
+- Test files live next to the code they test: `TaskService.ts` → `TaskService.test.ts`
+- Server tests use the test helper (`test-helpers.ts`) for in-memory database setup
+- Client component tests render with tRPC mock provider or MSW for API mocking
+- E2E tests cover critical user flows (create task, complete task, navigate views, auth)
+- Every tRPC router procedure should have at least one happy-path test
+- Every React component with logic (not pure layout) should have a component test
+- Run `pnpm test` at root to run all unit/integration tests across packages
+- Run `pnpm test:e2e` at root to run Playwright end-to-end tests
+
+**CI/CD:**
+- GitHub Actions runs all tests on push and PR
+- Pipeline: lint → typecheck → unit tests → build → e2e tests
+- Tests must pass before merge
+
 ### Commit Messages
 - Start with lowercase present-tense verb: adds, modifies, fixes, removes, updates, refactors, implements
 - Brief description of WHAT changed

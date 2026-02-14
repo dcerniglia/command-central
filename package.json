@@ -4,6 +4,8 @@
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
     "build": "pnpm --filter client build && pnpm --filter server build",
+    "test": "pnpm --filter server test && pnpm --filter client test",
+    "typecheck": "pnpm --filter server typecheck && pnpm --filter client typecheck",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
