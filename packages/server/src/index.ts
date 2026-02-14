@@ -30,9 +30,14 @@ import claudeStateRouter from './routes/claude-state.js';
 import notificationsRouter from './routes/notifications.js';
 
 const app = express();
-const PORT = 3001;
+const PORT = parseInt(process.env.PORT || '3001', 10);
+const isProduction = process.env.NODE_ENV === 'production';
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const allowedOrigins = isProduction
+  ? [process.env.APP_URL ?? ''].filter(Boolean)
+  : ['http://localhost:5173'];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -58,12 +63,23 @@ app.use('/api/insights', insightsRouter);
 app.use('/api/claude-state', claudeStateRouter);
 app.use('/api/notifications', notificationsRouter);
 
+// In production, serve the built client SPA
+if (isProduction) {
+  const clientDist = path.resolve(__dirname, '..', '..', 'client', 'dist');
+  app.use(express.static(clientDist));
+  // SPA fallback — serve index.html for all non-API routes
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
+
 const server = http.createServer(app);
 setupTerminalWebSocket(server);
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`tRPC endpoint: http://localhost:${PORT}/trpc`);
+  if (isProduction) console.log('Serving client static files');
 });
 
 export { db };
