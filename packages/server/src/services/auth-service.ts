@@ -69,8 +69,9 @@ export class AuthService {
     const [user] = await this.db.insert(users).values({ username }).returning();
 
     // Store authenticator
+    // In SimpleWebAuthn v10+, credential.id is already a Base64URLString
     await this.db.insert(authenticators).values({
-      credentialId: Buffer.from(credential.id).toString('base64url'),
+      credentialId: credential.id,
       publicKey: Buffer.from(credential.publicKey).toString('base64url'),
       counter: credential.counter,
       transports: response.response.transports ? JSON.stringify(response.response.transports) : null,
