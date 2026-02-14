@@ -21,6 +21,19 @@ export const taskLists = pgTable('task_lists', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const taskProjects = pgTable('task_projects', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  description: text('description'),
+  areaId: uuid('area_id').references(() => taskAreas.id, { onDelete: 'set null' }),
+  status: text('status', { enum: ['active', 'completed', 'on_hold', 'archived'] }).notNull().default('active'),
+  icon: text('icon'),
+  color: text('color'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const taskTags = pgTable('task_tags', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull().unique(),
@@ -33,6 +46,7 @@ export const taskItems = pgTable('task_items', {
   notes: text('notes'),
   listId: uuid('list_id').references(() => taskLists.id, { onDelete: 'set null' }),
   areaId: uuid('area_id').references(() => taskAreas.id, { onDelete: 'set null' }),
+  projectId: uuid('project_id').references(() => taskProjects.id, { onDelete: 'set null' }),
   status: text('status', { enum: ['todo', 'done', 'cancelled'] }).notNull().default('todo'),
   priority: integer('priority').notNull().default(0),
   dueDate: date('due_date'),

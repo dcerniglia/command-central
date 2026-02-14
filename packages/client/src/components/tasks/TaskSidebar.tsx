@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import {
   Inbox, CalendarDays, CalendarClock, ListChecks,
-  ChevronRight, Plus, FolderOpen, MapPin,
+  ChevronRight, Plus, FolderOpen, MapPin, Layers,
 } from 'lucide-react';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
@@ -12,9 +12,11 @@ interface TaskSidebarProps {
   activeView: ViewKey | null;
   activeListId: string | null;
   activeAreaId: string | null;
+  activeProjectId: string | null;
   onViewChange: (view: ViewKey) => void;
   onListSelect: (listId: string) => void;
   onAreaSelect: (areaId: string) => void;
+  onProjectSelect: (projectId: string) => void;
 }
 
 const smartViews = [
@@ -25,11 +27,12 @@ const smartViews = [
 ];
 
 export default function TaskSidebar({
-  activeView, activeListId, activeAreaId,
-  onViewChange, onListSelect, onAreaSelect,
+  activeView, activeListId, activeAreaId, activeProjectId,
+  onViewChange, onListSelect, onAreaSelect, onProjectSelect,
 }: TaskSidebarProps) {
   const { data: areas = [] } = trpc.tasks.areas.list.useQuery();
   const { data: lists = [] } = trpc.tasks.lists.list.useQuery();
+  const { data: projects = [] } = trpc.tasks.projects.list.useQuery();
   const utils = trpc.useUtils();
 
   const createArea = trpc.tasks.areas.create.useMutation({
@@ -38,11 +41,16 @@ export default function TaskSidebar({
   const createList = trpc.tasks.lists.create.useMutation({
     onSuccess: () => utils.tasks.lists.list.invalidate(),
   });
+  const createProject = trpc.tasks.projects.create.useMutation({
+    onSuccess: () => utils.tasks.projects.list.invalidate(),
+  });
 
   const [newAreaName, setNewAreaName] = useState('');
   const [showNewArea, setShowNewArea] = useState(false);
   const [newListAreaId, setNewListAreaId] = useState<string | null>(null);
   const [newListName, setNewListName] = useState('');
+  const [newProjectAreaId, setNewProjectAreaId] = useState<string | null>(null);
+  const [newProjectName, setNewProjectName] = useState('');
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
 
   function toggleArea(areaId: string) {
@@ -68,6 +76,14 @@ export default function TaskSidebar({
     createList.mutate({ name, areaId });
     setNewListName('');
     setNewListAreaId(null);
+  }
+
+  function handleCreateProject(areaId: string | null) {
+    const name = newProjectName.trim();
+    if (!name) return;
+    createProject.mutate({ name, areaId });
+    setNewProjectName('');
+    setNewProjectAreaId(null);
   }
 
   const unassignedLists = lists.filter((l: any) => !l.areaId);
@@ -126,6 +142,7 @@ export default function TaskSidebar({
 
         {areas.map((area: any) => {
           const areaLists = lists.filter((l: any) => l.areaId === area.id);
+          const areaProjects = projects.filter((p: any) => p.areaId === area.id);
           const expanded = expandedAreas.has(area.id);
 
           return (
@@ -176,6 +193,22 @@ export default function TaskSidebar({
                     </button>
                   ))}
 
+                  {areaProjects.map((project: any) => (
+                    <button
+                      key={project.id}
+                      onClick={() => onProjectSelect(project.id)}
+                      className={cn(
+                        'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-body transition-colors duration-150',
+                        activeProjectId === project.id
+                          ? 'bg-primary/15 text-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+                      )}
+                    >
+                      <Layers className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="truncate">{project.name}</span>
+                    </button>
+                  ))}
+
                   {newListAreaId === area.id && (
                     <input
                       autoFocus
@@ -187,6 +220,21 @@ export default function TaskSidebar({
                       }}
                       onBlur={() => { setNewListAreaId(null); setNewListName(''); }}
                       placeholder="List name..."
+                      className="w-full bg-surface-raised text-body text-foreground placeholder:text-muted-foreground/50 px-2 py-1 rounded border border-border focus:outline-none focus:border-primary/50"
+                    />
+                  )}
+
+                  {newProjectAreaId === area.id && (
+                    <input
+                      autoFocus
+                      value={newProjectName}
+                      onChange={(e) => setNewProjectName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCreateProject(area.id);
+                        if (e.key === 'Escape') { setNewProjectAreaId(null); setNewProjectName(''); }
+                      }}
+                      onBlur={() => { setNewProjectAreaId(null); setNewProjectName(''); }}
+                      placeholder="Project name..."
                       className="w-full bg-surface-raised text-body text-foreground placeholder:text-muted-foreground/50 px-2 py-1 rounded border border-border focus:outline-none focus:border-primary/50"
                     />
                   )}

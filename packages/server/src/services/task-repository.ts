@@ -27,9 +27,14 @@ export class TaskRepository {
       conditions.push(eq(taskItems.areaId, filter.areaId));
     }
 
+    if (filter.projectId) {
+      conditions.push(eq(taskItems.projectId, filter.projectId));
+    }
+
     if (filter.view === 'inbox') {
       conditions.push(isNull(taskItems.listId));
       conditions.push(isNull(taskItems.areaId));
+      conditions.push(isNull(taskItems.projectId));
     } else if (filter.view === 'today') {
       const today = new Date().toISOString().split('T')[0];
       conditions.push(lte(taskItems.dueDate, today));
