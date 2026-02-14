@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Calendar, Flag, FolderOpen, MapPin, Layers, Repeat } from 'lucide-react';
+import { X, Trash2, Calendar, Flag, FolderOpen, MapPin, Layers, Repeat, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
@@ -80,6 +80,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   }
 
   const isDone = task.status === 'done';
+  const isJira = task.source === 'jira';
 
   return (
     <div className="w-[400px] border-l border-border bg-surface-root flex flex-col flex-shrink-0">
@@ -87,7 +88,20 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       <div className="flex items-center justify-between px-4 h-14 border-b border-border">
         <div className="flex items-center gap-3">
           <TaskCheckbox checked={isDone} onChange={() => complete.mutate({ id: taskId })} />
-          <span className="text-overline text-muted-foreground uppercase tracking-wider">Task Detail</span>
+          <span className="text-overline text-muted-foreground uppercase tracking-wider">
+            {isJira ? 'Jira Task' : 'Task Detail'}
+          </span>
+          {isJira && task.externalKey && (
+            <a
+              href={task.externalUrl ?? '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-caption text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span className="font-mono">{task.externalKey}</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -111,14 +125,19 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         {/* Title */}
         <input
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onBlur={() => title.trim() && title !== task.title && save({ title: title.trim() })}
+          onChange={(e) => !isJira && setTitle(e.target.value)}
+          onBlur={() => !isJira && title.trim() && title !== task.title && save({ title: title.trim() })}
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+          readOnly={isJira}
           className={cn(
             'w-full bg-transparent text-heading-3 text-foreground font-semibold focus:outline-none',
             isDone && 'line-through text-muted-foreground',
+            isJira && 'cursor-default',
           )}
         />
+        {isJira && (
+          <p className="text-caption text-muted-foreground/60">Title synced from Jira — edit in Jira to update</p>
+        )}
 
         {/* Notes */}
         <textarea

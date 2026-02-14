@@ -7,7 +7,11 @@ export interface QuickAddHandle {
   focus: () => void;
 }
 
-const QuickAdd = forwardRef<QuickAddHandle>(function QuickAdd(_props, ref) {
+interface QuickAddProps {
+  focusAreaId?: string | null;
+}
+
+const QuickAdd = forwardRef<QuickAddHandle, QuickAddProps>(function QuickAdd({ focusAreaId }, ref) {
   const [value, setValue] = useState('');
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +31,7 @@ const QuickAdd = forwardRef<QuickAddHandle>(function QuickAdd(_props, ref) {
   function handleSubmit() {
     const title = value.trim();
     if (!title) return;
-    create.mutate({ title });
+    create.mutate({ title, ...(focusAreaId ? { areaId: focusAreaId } : {}) });
   }
 
   return (

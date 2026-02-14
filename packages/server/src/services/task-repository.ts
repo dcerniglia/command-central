@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
-import { eq, and, isNull, lte, gte, sql, asc, ne } from 'drizzle-orm';
+import { eq, and, or, isNull, lte, gte, sql, asc, ne, inArray } from 'drizzle-orm';
 import { SYMBOLS } from '../di/symbols.js';
-import { taskItems, taskItemTags } from '../db/schema/tasks.js';
+import { taskItems, taskItemTags, taskLists, taskProjects } from '../db/schema/tasks.js';
 import type { Database } from '../db/drizzle.js';
 import type { TaskFilter } from '@cc/shared';
 
@@ -43,6 +43,25 @@ export class TaskRepository {
       const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       conditions.push(gte(taskItems.dueDate, today));
       conditions.push(lte(taskItems.dueDate, weekFromNow));
+    }
+
+    if (filter.focusAreaId) {
+      const listIdsInArea = this.db
+        .select({ id: taskLists.id })
+        .from(taskLists)
+        .where(eq(taskLists.areaId, filter.focusAreaId));
+      const projectIdsInArea = this.db
+        .select({ id: taskProjects.id })
+        .from(taskProjects)
+        .where(eq(taskProjects.areaId, filter.focusAreaId));
+
+      conditions.push(
+        or(
+          eq(taskItems.areaId, filter.focusAreaId),
+          inArray(taskItems.listId, listIdsInArea),
+          inArray(taskItems.projectId, projectIdsInArea),
+        )!,
+      );
     }
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;

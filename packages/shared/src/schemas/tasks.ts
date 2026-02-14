@@ -64,6 +64,9 @@ export const TaskChecklist = z.object({
 });
 export type TaskChecklist = z.infer<typeof TaskChecklist>;
 
+export const TaskSource = z.enum(['local', 'jira']);
+export type TaskSource = z.infer<typeof TaskSource>;
+
 export const TaskItem = z.object({
   id: z.string().uuid(),
   title: z.string().min(1),
@@ -79,6 +82,9 @@ export const TaskItem = z.object({
   sortOrder: z.number().int().default(0),
   recurrenceRule: z.string().nullish(), // iCal RRULE
   recurrenceParentId: z.string().uuid().nullish(),
+  source: TaskSource.default('local'),
+  externalKey: z.string().nullish(),
+  externalUrl: z.string().nullish(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -125,6 +131,7 @@ export const TaskFilter = z.object({
   areaId: z.string().uuid().optional(),
   projectId: z.string().uuid().optional(),
   status: TaskStatus.optional(),
+  focusAreaId: z.string().uuid().optional(),
 });
 export type TaskFilter = z.infer<typeof TaskFilter>;
 

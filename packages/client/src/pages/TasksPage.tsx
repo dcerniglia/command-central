@@ -17,7 +17,19 @@ export default function TasksPage() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [focusAreaId, setFocusAreaId] = useState<string | null>(
+    () => localStorage.getItem('cc-focus-area-id') || null,
+  );
   const quickAddRef = useRef<QuickAddHandle>(null);
+
+  function handleFocusArea(areaId: string | null) {
+    setFocusAreaId(areaId);
+    if (areaId) {
+      localStorage.setItem('cc-focus-area-id', areaId);
+    } else {
+      localStorage.removeItem('cc-focus-area-id');
+    }
+  }
 
   useKeyboardShortcuts(useMemo(() => ({
     'n': () => quickAddRef.current?.focus(),
@@ -34,6 +46,9 @@ export default function TasksPage() {
     filter.areaId = activeAreaId;
   } else {
     filter.view = activeView;
+  }
+  if (focusAreaId) {
+    filter.focusAreaId = focusAreaId;
   }
 
   const { data: tasks = [], isLoading } = trpc.tasks.list.useQuery(filter);
@@ -88,17 +103,19 @@ export default function TasksPage() {
         activeListId={activeListId}
         activeAreaId={activeAreaId}
         activeProjectId={activeProjectId}
+        focusAreaId={focusAreaId}
         onViewChange={handleViewChange}
         onListSelect={handleListSelect}
         onAreaSelect={handleAreaSelect}
         onProjectSelect={handleProjectSelect}
+        onFocusArea={handleFocusArea}
       />
 
       <div className="flex flex-col flex-1 min-w-0">
         {/* Task list */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto space-y-3">
-            <QuickAdd ref={quickAddRef} />
+            <QuickAdd ref={quickAddRef} focusAreaId={focusAreaId} />
 
             {isLoading ? (
               <div className="space-y-3 mt-4">
