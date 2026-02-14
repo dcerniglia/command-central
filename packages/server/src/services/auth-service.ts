@@ -16,8 +16,8 @@ import { users, authenticators, sessions } from '../db/schema/auth.js';
 import type { Database } from '../db/drizzle.js';
 
 const RP_NAME = 'Command Central';
-const RP_ID = 'localhost';
-const ORIGIN = 'http://localhost:5173';
+const RP_ID = process.env.WEBAUTHN_RP_ID ?? 'localhost';
+const ORIGIN = process.env.WEBAUTHN_ORIGIN ?? 'http://localhost:5173';
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // In-memory challenge store (per-session). Fine for single-user.
