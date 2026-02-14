@@ -62,7 +62,17 @@ Database tables are namespaced by module prefix (e.g. `task_items`, `task_lists`
 
 ## Project Tracking
 
-**GitHub Issues are the source of truth** for all tasks, planning, and project details. Not markdown files, not mental notes. Every decision, task, and piece of context gets captured in an issue or issue comment.
+**GitHub Issues are the source of truth** for all tasks, planning, and project details. Not markdown files, not mental notes, not Claude's internal context. Every decision, task, and piece of context gets captured in an issue or issue comment.
+
+### Issue-First Development
+
+**Never start writing code without a GitHub Issue that contains the requirements.** This is a hard rule:
+1. Requirements live in GitHub Issues — not in plans, not in conversation memory
+2. Before starting any implementation, read the issue to get the full requirements
+3. If requirements are unclear or missing from the issue, update the issue first — then implement
+4. Reference the issue number in commits and PRs (`Closes #N`)
+5. Update the issue with progress, decisions, and blockers as work happens
+6. When work is done, the issue should tell the full story of what was built and why
 
 ### Idea Capture
 
