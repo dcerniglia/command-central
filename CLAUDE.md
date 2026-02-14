@@ -126,6 +126,50 @@ Every feature must have well-documented associated tests. Tests are not optional
 - Keep first line under 72 characters
 - Do NOT use conventional commits (feat:, fix:), past tense, or ALL CAPS
 
+### Branching & PR Workflow
+
+All work follows a strict PR-based workflow. Every feature/fix gets its own branch and PR.
+
+**Branches:**
+- `main` — production. Protected: requires PR review + CI passing.
+- `develop` — staging/integration. Protected: requires PR review + CI passing.
+- Feature branches: `feature/<short-name>` off `develop`
+- Fix branches: `fix/<short-name>` off `develop`
+
+**Workflow:**
+1. Create feature branch from `develop`
+2. Implement feature with tests
+3. Push branch, create PR to `develop` with summary + test plan
+4. CI runs (typecheck → unit tests → build → e2e)
+5. David reviews and approves
+6. Merge to `develop` — auto-deploys to staging
+7. When ready, PR from `develop` → `main` — auto-deploys to production
+
+**Every GitHub Issue should have an associated PR.** Reference the issue in the PR description (`Closes #N`).
+
+### Deployment
+
+**Hosting:** Railway ($5/mo hobby plan)
+- `develop` branch → staging environment
+- `main` branch → production environment
+- Auto-deploy on push via Dockerfile
+
+**Database:** Neon Postgres (free tier)
+- Serverless with auto-scaling to zero
+- Database branching: `prod` branch and `dev` branch
+- 7-day point-in-time recovery on free tier
+- Daily automatic backups
+
+**Environment variables (Railway):**
+- `DATABASE_URL` — Neon connection string (with `?sslmode=require`)
+- `NODE_ENV` — `production`
+- `PORT` — set by Railway automatically
+- `APP_URL` — full production URL (for CORS)
+- `WEBAUTHN_RP_ID` — hostname for passkey auth (e.g. `command-central.up.railway.app`)
+- `WEBAUTHN_ORIGIN` — full origin for passkey auth (e.g. `https://command-central.up.railway.app`)
+
+**Production build:** Dockerfile builds client (Vite → static files) and server (tsc), then server serves both tRPC API and static client SPA. Single container.
+
 ## What NOT To Do
 
 - No Sparkshaft imports — this is independent
