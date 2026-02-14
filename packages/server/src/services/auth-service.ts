@@ -16,8 +16,8 @@ import { users, authenticators, sessions } from '../db/schema/auth.js';
 import type { Database } from '../db/drizzle.js';
 
 const RP_NAME = 'Command Central';
-const RP_ID = 'localhost';
-const ORIGIN = 'http://localhost:5173';
+const RP_ID = process.env.RP_ID || 'localhost';
+const ORIGIN = process.env.ORIGIN || 'http://localhost:5173';
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // In-memory challenge store (per-session). Fine for single-user.
@@ -69,8 +69,10 @@ export class AuthService {
     const [user] = await this.db.insert(users).values({ username }).returning();
 
     // Store authenticator
+    // In SimpleWebAuthn v10+, credential.id is already a Base64URLString
+    // credential.publicKey is a Uint8Array
     await this.db.insert(authenticators).values({
-      credentialId: Buffer.from(credential.id).toString('base64url'),
+      credentialId: credential.id,
       publicKey: Buffer.from(credential.publicKey).toString('base64url'),
       counter: credential.counter,
       transports: response.response.transports ? JSON.stringify(response.response.transports) : null,
