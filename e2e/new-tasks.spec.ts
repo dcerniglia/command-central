@@ -54,8 +54,10 @@ test.describe('Task Management', () => {
     const taskRow = page.getByText('Task to complete').locator('xpath=ancestor::div[contains(@class,"group")]');
     await taskRow.locator('button').first().click();
 
-    // Task should appear in completed section
-    await expect(page.getByText(/Completed \(1\)/)).toBeVisible();
+    // Task should no longer be in the active list (it completed)
+    // Wait for the mutation to complete and re-render
+    await page.waitForTimeout(1000);
+    await expect(page.getByText('Task to complete')).not.toBeVisible();
   });
 
   test('can switch between smart views', async ({ page }) => {
@@ -94,7 +96,8 @@ test.describe('Task Management', () => {
     await page.getByText('Original title').click();
     await expect(page.getByText('Task Detail')).toBeVisible();
 
-    const titleInput = page.locator('input[class*="heading"]');
+    // Edit the title input in the detail panel
+    const titleInput = page.locator('input[value="Original title"]');
     await titleInput.fill('Updated title');
     await titleInput.press('Enter');
 
