@@ -62,7 +62,7 @@ export default function TasksPage() {
     onSuccess: () => utils.tasks.list.invalidate(),
   });
 
-  const activeTasks = tasks.filter((t: any) => t.status === 'todo');
+  const activeTasks = tasks.filter((t: any) => !['done', 'cancelled'].includes(t.status));
   const doneTasks = tasks.filter((t: any) => t.status === 'done');
 
   function handleViewChange(view: ViewKey) {
