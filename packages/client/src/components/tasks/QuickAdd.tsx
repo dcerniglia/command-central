@@ -1,12 +1,20 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 
-export default function QuickAdd() {
+export interface QuickAddHandle {
+  focus: () => void;
+}
+
+const QuickAdd = forwardRef<QuickAddHandle>(function QuickAdd(_props, ref) {
   const [value, setValue] = useState('');
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+  }));
   const utils = trpc.useUtils();
 
   const create = trpc.tasks.create.useMutation({
@@ -54,4 +62,6 @@ export default function QuickAdd() {
       )}
     </div>
   );
-}
+});
+
+export default QuickAdd;

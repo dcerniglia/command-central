@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import { Inbox } from 'lucide-react';
@@ -6,7 +6,8 @@ import TaskRow from '@/components/tasks/TaskRow';
 import TaskDetail from '@/components/tasks/TaskDetail';
 import TaskSidebar from '@/components/tasks/TaskSidebar';
 import SortableTaskList from '@/components/tasks/SortableTaskList';
-import QuickAdd from '@/components/tasks/QuickAdd';
+import QuickAdd, { type QuickAddHandle } from '@/components/tasks/QuickAdd';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
 
@@ -15,6 +16,12 @@ export default function TasksPage() {
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const quickAddRef = useRef<QuickAddHandle>(null);
+
+  useKeyboardShortcuts(useMemo(() => ({
+    'n': () => quickAddRef.current?.focus(),
+    'Escape': () => setSelectedTaskId(null),
+  }), []));
 
   // Build filter based on what's selected
   const filter: Record<string, any> = {};
@@ -77,7 +84,7 @@ export default function TasksPage() {
         {/* Task list */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto space-y-3">
-            <QuickAdd />
+            <QuickAdd ref={quickAddRef} />
 
             {isLoading ? (
               <div className="space-y-3 mt-4">
