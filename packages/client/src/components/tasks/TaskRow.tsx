@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
-import { Star, GripVertical } from 'lucide-react';
+import { Star, GripVertical, ExternalLink } from 'lucide-react';
 import TaskCheckbox from './TaskCheckbox';
 
 export interface TaskRowTask {
@@ -11,6 +11,9 @@ export interface TaskRowTask {
   dueDate?: string | null;
   listId?: string | null;
   areaId?: string | null;
+  source?: string | null;
+  externalKey?: string | null;
+  externalUrl?: string | null;
 }
 
 interface TaskRowProps {
@@ -87,6 +90,22 @@ const TaskRow = forwardRef<HTMLDivElement, TaskRowProps>(function TaskRow(
       </div>
 
       <div className="flex items-center gap-2">
+        {task.source === 'jira' && task.externalKey && (
+          <span className="flex items-center gap-1 text-caption text-muted-foreground/70">
+            <span className="font-mono text-[11px]">{task.externalKey}</span>
+            {task.externalUrl && (
+              <a
+                href={task.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="hover:text-foreground transition-colors"
+              >
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </span>
+        )}
         {task.priority === 3 && (
           <Star className="h-3.5 w-3.5 text-primary fill-primary" />
         )}

@@ -4,6 +4,7 @@ import { trpc } from '@/lib/trpc';
 import {
   Inbox, CalendarDays, CalendarClock, ListChecks,
   ChevronRight, Plus, FolderOpen, MapPin, Layers,
+  Crosshair, RefreshCw,
 } from 'lucide-react';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
@@ -13,10 +14,12 @@ interface TaskSidebarProps {
   activeListId: string | null;
   activeAreaId: string | null;
   activeProjectId: string | null;
+  focusAreaId: string | null;
   onViewChange: (view: ViewKey) => void;
   onListSelect: (listId: string) => void;
   onAreaSelect: (areaId: string) => void;
   onProjectSelect: (projectId: string) => void;
+  onFocusArea: (areaId: string | null) => void;
 }
 
 const smartViews = [
@@ -27,8 +30,8 @@ const smartViews = [
 ];
 
 export default function TaskSidebar({
-  activeView, activeListId, activeAreaId, activeProjectId,
-  onViewChange, onListSelect, onAreaSelect, onProjectSelect,
+  activeView, activeListId, activeAreaId, activeProjectId, focusAreaId,
+  onViewChange, onListSelect, onAreaSelect, onProjectSelect, onFocusArea,
 }: TaskSidebarProps) {
   const { data: areas = [] } = trpc.tasks.areas.list.useQuery();
   const { data: lists = [] } = trpc.tasks.lists.list.useQuery();
@@ -52,6 +55,18 @@ export default function TaskSidebar({
   const [newProjectAreaId, setNewProjectAreaId] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState('');
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
+
+  const { data: jiraStatus } = trpc.jira.status.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const jiraSync = trpc.jira.sync.useMutation({
+    onSuccess: () => {
+      utils.tasks.list.invalidate();
+      utils.tasks.areas.list.invalidate();
+      utils.tasks.projects.list.invalidate();
+    },
+  });
 
   function toggleArea(areaId: string) {
     setExpandedAreas((prev) => {
@@ -109,7 +124,38 @@ export default function TaskSidebar({
         ))}
       </div>
 
+      {/* Jira sync */}
+      {jiraStatus?.configured && (
+        <div className="px-2 pb-1">
+          <button
+            onClick={() => jiraSync.mutate()}
+            disabled={jiraSync.isPending}
+            className={cn(
+              'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
+              'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+              jiraSync.isPending && 'opacity-50 cursor-wait',
+            )}
+          >
+            <RefreshCw className={cn('h-4 w-4 flex-shrink-0', jiraSync.isPending && 'animate-spin')} />
+            <span>{jiraSync.isPending ? 'Syncing...' : 'Sync Jira'}</span>
+          </button>
+        </div>
+      )}
+
       <div className="mx-2 my-2 border-t border-border" />
+
+      {/* Focus mode indicator */}
+      {focusAreaId && (
+        <div className="px-2 pb-1">
+          <button
+            onClick={() => onFocusArea(null)}
+            className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-body text-primary bg-primary/10 hover:bg-primary/15 transition-colors"
+          >
+            <Crosshair className="h-4 w-4" />
+            <span>All Areas</span>
+          </button>
+        </div>
+      )}
 
       {/* Areas with nested lists */}
       <div className="p-2 space-y-1">
@@ -140,7 +186,7 @@ export default function TaskSidebar({
           </div>
         )}
 
-        {areas.map((area: any) => {
+        {areas.filter((a: any) => !focusAreaId || a.id === focusAreaId).map((area: any) => {
           const areaLists = lists.filter((l: any) => l.areaId === area.id);
           const areaProjects = projects.filter((p: any) => p.areaId === area.id);
           const expanded = expandedAreas.has(area.id);
@@ -165,6 +211,18 @@ export default function TaskSidebar({
                 >
                   <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
                   <span className="truncate">{area.name}</span>
+                </button>
+                <button
+                  onClick={() => onFocusArea(focusAreaId === area.id ? null : area.id)}
+                  className={cn(
+                    'p-1 rounded transition-colors',
+                    focusAreaId === area.id
+                      ? 'text-primary'
+                      : 'text-muted-foreground/0 hover:text-muted-foreground',
+                  )}
+                  title={focusAreaId === area.id ? 'Clear focus' : 'Focus on this area'}
+                >
+                  <Crosshair className="h-3 w-3" />
                 </button>
                 <button
                   onClick={() => { setNewListAreaId(area.id); setExpandedAreas((p) => new Set(p).add(area.id)); }}
