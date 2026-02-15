@@ -9,8 +9,7 @@ const baseTask = {
   status: 'todo',
   priority: 0,
   dueDate: null,
-  listId: null,
-  areaId: null,
+  projectId: null,
 };
 
 describe('TaskRow', () => {

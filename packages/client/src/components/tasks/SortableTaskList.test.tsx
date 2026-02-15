@@ -3,9 +3,9 @@ import { describe, it, expect, vi } from 'vitest';
 import SortableTaskList from './SortableTaskList';
 
 const tasks = [
-  { id: '1', title: 'First task', status: 'todo', priority: 0, dueDate: null, listId: null, areaId: null },
-  { id: '2', title: 'Second task', status: 'todo', priority: 1, dueDate: null, listId: null, areaId: null },
-  { id: '3', title: 'Third task', status: 'todo', priority: 2, dueDate: null, listId: null, areaId: null },
+  { id: '1', title: 'First task', status: 'todo', priority: 0, dueDate: null, projectId: null },
+  { id: '2', title: 'Second task', status: 'todo', priority: 1, dueDate: null, projectId: null },
+  { id: '3', title: 'Third task', status: 'todo', priority: 2, dueDate: null, projectId: null },
 ];
 
 describe('SortableTaskList', () => {

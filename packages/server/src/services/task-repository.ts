@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { eq, and, or, isNull, lte, gte, sql, asc, ne, inArray } from 'drizzle-orm';
 import { SYMBOLS } from '../di/symbols.js';
-import { taskItems, taskItemTags, taskLists, taskProjects } from '../db/schema/tasks.js';
+import { taskItems, taskItemTags, taskProjects } from '../db/schema/tasks.js';
 import type { Database } from '../db/drizzle.js';
 import type { TaskFilter } from '@cc/shared';
 
@@ -19,21 +19,25 @@ export class TaskRepository {
       conditions.push(ne(taskItems.status, 'cancelled'));
     }
 
-    if (filter.listId) {
-      conditions.push(eq(taskItems.listId, filter.listId));
-    }
-
-    if (filter.areaId) {
-      conditions.push(eq(taskItems.areaId, filter.areaId));
-    }
-
     if (filter.projectId) {
       conditions.push(eq(taskItems.projectId, filter.projectId));
     }
 
+    if (filter.areaId) {
+      // Area filter: tasks in projects that belong to this area
+      const projectIdsInArea = this.db
+        .select({ id: taskProjects.id })
+        .from(taskProjects)
+        .where(eq(taskProjects.areaId, filter.areaId));
+      conditions.push(inArray(taskItems.projectId, projectIdsInArea));
+    }
+
+    if (filter.noProject) {
+      conditions.push(isNull(taskItems.projectId));
+    }
+
     if (filter.view === 'inbox') {
-      conditions.push(isNull(taskItems.listId));
-      conditions.push(isNull(taskItems.areaId));
+      // Inbox = tasks with no project
       conditions.push(isNull(taskItems.projectId));
     } else if (filter.view === 'today') {
       const today = new Date().toISOString().split('T')[0];
@@ -46,22 +50,12 @@ export class TaskRepository {
     }
 
     if (filter.focusAreaId) {
-      const listIdsInArea = this.db
-        .select({ id: taskLists.id })
-        .from(taskLists)
-        .where(eq(taskLists.areaId, filter.focusAreaId));
       const projectIdsInArea = this.db
         .select({ id: taskProjects.id })
         .from(taskProjects)
         .where(eq(taskProjects.areaId, filter.focusAreaId));
 
-      conditions.push(
-        or(
-          eq(taskItems.areaId, filter.focusAreaId),
-          inArray(taskItems.listId, listIdsInArea),
-          inArray(taskItems.projectId, projectIdsInArea),
-        )!,
-      );
+      conditions.push(inArray(taskItems.projectId, projectIdsInArea));
     }
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
@@ -108,10 +102,9 @@ export class TaskRepository {
     }
   }
 
-  async getMaxSortOrder(listId?: string | null, areaId?: string | null) {
+  async getMaxSortOrder(projectId?: string | null) {
     const conditions = [];
-    if (listId) conditions.push(eq(taskItems.listId, listId));
-    if (areaId) conditions.push(eq(taskItems.areaId, areaId));
+    if (projectId) conditions.push(eq(taskItems.projectId, projectId));
 
     const [result] = await this.db
       .select({ max: sql<number>`coalesce(max(${taskItems.sortOrder}), 0)` })
