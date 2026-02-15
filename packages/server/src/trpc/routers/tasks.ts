@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc.js';
 import { SYMBOLS } from '../../di/symbols.js';
 import { TaskService } from '../../services/task-service.js';
+import { NaturalLanguageService } from '../../services/natural-language-service.js';
 import { AreaRepository } from '../../services/area-repository.js';
 import { TagRepository } from '../../services/tag-repository.js';
 import { ChecklistRepository } from '../../services/checklist-repository.js';
@@ -11,6 +12,7 @@ import {
   UpdateTaskInput,
   TaskFilter,
   ReorderInput,
+  ParseTaskInput,
   CreateAreaInput,
   UpdateAreaInput,
   CreateTagInput,
@@ -54,6 +56,11 @@ export const tasksRouter = router({
   reorder: protectedProcedure.input(ReorderInput).mutation(async ({ ctx, input }) => {
     const service = ctx.container.get<TaskService>(SYMBOLS.TaskService);
     return service.reorder(input.items);
+  }),
+
+  parseNaturalLanguage: protectedProcedure.input(ParseTaskInput).mutation(async ({ ctx, input }) => {
+    const nlService = ctx.container.get<NaturalLanguageService>(SYMBOLS.NaturalLanguageService);
+    return nlService.parse(input.text);
   }),
 
   // Areas

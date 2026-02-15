@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
     "@cc/shared": "workspace:*",
     "@simplewebauthn/server": "^13.2.2",
     "@trpc/server": "^11.10.0",

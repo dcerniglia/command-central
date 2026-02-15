@@ -10,6 +10,7 @@ import { ChecklistRepository } from '../services/checklist-repository.js';
 import { ProjectRepository } from '../services/project-repository.js';
 import { TaskService } from '../services/task-service.js';
 import { JiraService } from '../services/jira-service.js';
+import { NaturalLanguageService } from '../services/natural-language-service.js';
 
 export function createContainer(): Container {
   const container = new Container();
@@ -30,6 +31,7 @@ export function createContainer(): Container {
   // Services — singleton
   container.bind(SYMBOLS.TaskService).to(TaskService).inSingletonScope();
   container.bind(SYMBOLS.JiraService).to(JiraService).inSingletonScope();
+  container.bind(SYMBOLS.NaturalLanguageService).to(NaturalLanguageService).inRequestScope();
 
   return container;
 }

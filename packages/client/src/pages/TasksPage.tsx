@@ -7,6 +7,7 @@ import ProjectHeader from '@/components/tasks/ProjectHeader';
 import TaskSidebar from '@/components/tasks/TaskSidebar';
 import SortableTaskList from '@/components/tasks/SortableTaskList';
 import QuickAdd, { type QuickAddHandle } from '@/components/tasks/QuickAdd';
+import NaturalLanguageCapture from '@/components/tasks/NaturalLanguageCapture';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
@@ -21,6 +22,7 @@ export default function TasksPage() {
   const [focusAreaId, setFocusAreaId] = useState<string | null>(
     () => localStorage.getItem('cc-focus-area-id') || null,
   );
+  const [nlCaptureOpen, setNlCaptureOpen] = useState(false);
   const quickAddRef = useRef<QuickAddHandle>(null);
 
   function handleFocusArea(areaId: string | null) {
@@ -34,6 +36,7 @@ export default function TasksPage() {
 
   useKeyboardShortcuts(useMemo(() => ({
     'n': () => quickAddRef.current?.focus(),
+    'mod+k': () => setNlCaptureOpen(true),
     'Escape': () => setSelectedTaskId(null),
   }), []));
 
@@ -194,6 +197,12 @@ export default function TasksPage() {
       {selectedTaskId && (
         <TaskDetail taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
       )}
+
+      <NaturalLanguageCapture
+        open={nlCaptureOpen}
+        onClose={() => setNlCaptureOpen(false)}
+        projectId={activeProjectId}
+      />
     </div>
   );
 }

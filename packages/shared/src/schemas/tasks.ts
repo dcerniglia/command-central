@@ -73,6 +73,7 @@ export const TaskItem = z.object({
   sortOrder: z.number().int().default(0),
   recurrenceRule: z.string().nullish(), // iCal RRULE
   recurrenceParentId: z.string().uuid().nullish(),
+  processed: z.boolean().default(false),
   source: TaskSource.default('local'),
   externalKey: z.string().nullish(),
   externalUrl: z.string().nullish(),
@@ -97,8 +98,30 @@ export const CreateTaskInput = z.object({
   estimateMinutes: z.number().int().nullish(),
   recurrenceRule: z.string().nullish(),
   tagIds: z.array(z.string().uuid()).default([]),
+  processed: z.boolean().default(false),
 });
 export type CreateTaskInput = z.infer<typeof CreateTaskInput>;
+
+// Natural language parsing
+export const ParseTaskInput = z.object({
+  text: z.string().min(1),
+});
+export type ParseTaskInput = z.infer<typeof ParseTaskInput>;
+
+export const ParsedTaskPreview = z.object({
+  title: z.string(),
+  notes: z.string().nullish(),
+  projectId: z.string().uuid().nullish(),
+  projectName: z.string().nullish(),
+  tagIds: z.array(z.string().uuid()).default([]),
+  tagNames: z.array(z.string()).default([]),
+  priority: TaskPriority.default(0),
+  dueDate: z.string().nullish(),
+  startDate: z.string().nullish(),
+  dueTime: z.string().nullish(),
+  estimateMinutes: z.number().int().nullish(),
+});
+export type ParsedTaskPreview = z.infer<typeof ParsedTaskPreview>;
 
 export const UpdateTaskInput = z.object({
   id: z.string().uuid(),
