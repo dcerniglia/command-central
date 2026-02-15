@@ -10,7 +10,7 @@ export class TaskRepository {
   constructor(@inject(SYMBOLS.Database) private db: Database) {}
 
   async list(filter: TaskFilter) {
-    const conditions = []; // drizzle conditions
+    const conditions = [isNull(taskItems.archivedAt)];
 
     if (filter.status) {
       conditions.push(eq(taskItems.status, filter.status));
@@ -87,7 +87,10 @@ export class TaskRepository {
   }
 
   async delete(id: string) {
-    await this.db.delete(taskItems).where(eq(taskItems.id, id));
+    await this.db
+      .update(taskItems)
+      .set({ archivedAt: new Date(), updatedAt: new Date() })
+      .where(eq(taskItems.id, id));
   }
 
   async getTagIds(taskId: string) {
