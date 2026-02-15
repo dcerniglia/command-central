@@ -29,6 +29,8 @@ export const taskProjects = pgTable('task_projects', {
   status: text('status', { enum: ['active', 'completed', 'on_hold', 'archived'] }).notNull().default('active'),
   icon: text('icon'),
   color: text('color'),
+  startDate: date('start_date'),
+  dueDate: date('due_date'),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

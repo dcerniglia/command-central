@@ -4,7 +4,7 @@ import { trpc } from '@/lib/trpc';
 import {
   Inbox, CalendarDays, CalendarClock, ListChecks,
   ChevronRight, Plus, MapPin, Layers, CircleOff,
-  Crosshair, RefreshCw,
+  Crosshair, RefreshCw, Tag, X,
 } from 'lucide-react';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
@@ -44,6 +44,16 @@ export default function TaskSidebar({
     onSuccess: () => utils.tasks.projects.list.invalidate(),
   });
 
+  const { data: tags = [] } = trpc.tasks.tags.list.useQuery();
+  const createTag = trpc.tasks.tags.create.useMutation({
+    onSuccess: () => utils.tasks.tags.list.invalidate(),
+  });
+  const deleteTag = trpc.tasks.tags.delete.useMutation({
+    onSuccess: () => utils.tasks.tags.list.invalidate(),
+  });
+
+  const [showNewTag, setShowNewTag] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
   const [newAreaName, setNewAreaName] = useState('');
   const [showNewArea, setShowNewArea] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
@@ -239,7 +249,7 @@ export default function TaskSidebar({
           const expanded = expandedAreas.has(area.id);
 
           return (
-            <div key={area.id}>
+            <div key={area.id} className="group/area">
               <div className="flex items-center">
                 {areaProjects.length > 0 && (
                   <button
@@ -298,6 +308,59 @@ export default function TaskSidebar({
             </div>
           );
         })}
+      </div>
+
+      <div className="mx-2 my-2 border-t border-border" />
+
+      {/* Tags */}
+      <div className="p-2 space-y-1">
+        <div className="flex items-center justify-between px-2.5 mb-1">
+          <span className="text-overline text-muted-foreground uppercase tracking-wider">Tags</span>
+          <button
+            onClick={() => setShowNewTag(true)}
+            className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {showNewTag && (
+          <div className="px-2.5">
+            <input
+              autoFocus
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const name = newTagName.trim();
+                  if (name) createTag.mutate({ name });
+                  setNewTagName('');
+                  setShowNewTag(false);
+                }
+                if (e.key === 'Escape') { setShowNewTag(false); setNewTagName(''); }
+              }}
+              onBlur={() => { setShowNewTag(false); setNewTagName(''); }}
+              placeholder="Tag name..."
+              className="w-full bg-surface-raised text-body text-foreground placeholder:text-muted-foreground/50 px-2 py-1 rounded border border-border focus:outline-none focus:border-primary/50"
+            />
+          </div>
+        )}
+
+        {tags.map((tag: any) => (
+          <div
+            key={tag.id}
+            className="group/tag flex items-center gap-2 px-2.5 py-1.5 rounded-md text-body text-muted-foreground"
+          >
+            <Tag className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate flex-1">{tag.name}</span>
+            <button
+              onClick={() => deleteTag.mutate({ id: tag.id })}
+              className="p-0.5 rounded opacity-0 group-hover/tag:opacity-100 text-muted-foreground hover:text-status-error transition-all"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
