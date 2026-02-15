@@ -63,6 +63,14 @@ export default function TasksPage() {
     onSuccess: () => utils.tasks.list.invalidate(),
   });
 
+  const updateTask = trpc.tasks.update.useMutation({
+    onSuccess: () => utils.tasks.list.invalidate(),
+  });
+
+  function handleDropTaskToProject(taskId: string, projectId: string) {
+    updateTask.mutate({ id: taskId, projectId });
+  }
+
   const activeTasks = tasks.filter((t: any) => !['done', 'cancelled'].includes(t.status));
   const doneTasks = tasks.filter((t: any) => t.status === 'done');
 
@@ -110,6 +118,7 @@ export default function TasksPage() {
         onAreaSelect={handleAreaSelect}
         onProjectSelect={handleProjectSelect}
         onFocusArea={handleFocusArea}
+        onDropTaskToProject={handleDropTaskToProject}
       />
 
       <div className="flex flex-col flex-1 min-w-0">

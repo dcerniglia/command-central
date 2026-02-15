@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type DragEvent } from 'react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import {
@@ -20,6 +20,58 @@ interface TaskSidebarProps {
   onAreaSelect: (areaId: string) => void;
   onProjectSelect: (projectId: string) => void;
   onFocusArea: (areaId: string | null) => void;
+  onDropTaskToProject?: (taskId: string, projectId: string) => void;
+}
+
+function useDropTarget(onDrop: (taskId: string) => void) {
+  const [isOver, setIsOver] = useState(false);
+  return {
+    isOver,
+    handlers: {
+      onDragOver: (e: DragEvent) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setIsOver(true); },
+      onDragEnter: (e: DragEvent) => { e.preventDefault(); setIsOver(true); },
+      onDragLeave: () => setIsOver(false),
+      onDrop: (e: DragEvent) => {
+        e.preventDefault();
+        setIsOver(false);
+        const taskId = e.dataTransfer.getData('text/plain');
+        if (taskId) onDrop(taskId);
+      },
+    },
+  };
+}
+
+function ProjectDropButton({
+  project,
+  isActive,
+  onClick,
+  onDropTask,
+  className: extraClassName,
+}: {
+  project: { id: string; name: string };
+  isActive: boolean;
+  onClick: () => void;
+  onDropTask?: (taskId: string, projectId: string) => void;
+  className?: string;
+}) {
+  const drop = useDropTarget((taskId) => onDropTask?.(taskId, project.id));
+  return (
+    <button
+      onClick={onClick}
+      {...(onDropTask ? drop.handlers : {})}
+      className={cn(
+        'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-body transition-colors duration-150',
+        isActive
+          ? 'bg-primary/15 text-foreground'
+          : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+        drop.isOver && 'ring-2 ring-primary bg-primary/10',
+        extraClassName,
+      )}
+    >
+      <Layers className="h-3.5 w-3.5 flex-shrink-0" />
+      <span className="truncate">{project.name}</span>
+    </button>
+  );
 }
 
 const smartViews = [
@@ -32,6 +84,7 @@ const smartViews = [
 export default function TaskSidebar({
   activeView, activeListId, activeAreaId, activeProjectId, focusAreaId,
   onViewChange, onListSelect, onAreaSelect, onProjectSelect, onFocusArea,
+  onDropTaskToProject,
 }: TaskSidebarProps) {
   const { data: areas = [] } = trpc.tasks.areas.list.useQuery();
   const { data: lists = [] } = trpc.tasks.lists.list.useQuery();
@@ -260,19 +313,13 @@ export default function TaskSidebar({
                   ))}
 
                   {areaProjects.map((project: any) => (
-                    <button
+                    <ProjectDropButton
                       key={project.id}
+                      project={project}
+                      isActive={activeProjectId === project.id}
                       onClick={() => onProjectSelect(project.id)}
-                      className={cn(
-                        'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-body transition-colors duration-150',
-                        activeProjectId === project.id
-                          ? 'bg-primary/15 text-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
-                      )}
-                    >
-                      <Layers className="h-3.5 w-3.5 flex-shrink-0" />
-                      <span className="truncate">{project.name}</span>
-                    </button>
+                      onDropTask={onDropTaskToProject}
+                    />
                   ))}
 
                   {newListAreaId === area.id && (
@@ -330,19 +377,14 @@ export default function TaskSidebar({
               </button>
             ))}
             {unassignedProjects.map((project: any) => (
-              <button
+              <ProjectDropButton
                 key={project.id}
+                project={project}
+                isActive={activeProjectId === project.id}
                 onClick={() => onProjectSelect(project.id)}
-                className={cn(
-                  'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
-                  activeProjectId === project.id
-                    ? 'bg-primary/15 text-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
-                )}
-              >
-                <Layers className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="truncate">{project.name}</span>
-              </button>
+                onDropTask={onDropTaskToProject}
+                className="px-2.5"
+              />
             ))}
           </>
         )}
