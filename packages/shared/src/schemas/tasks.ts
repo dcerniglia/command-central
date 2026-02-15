@@ -22,18 +22,6 @@ export const TaskArea = z.object({
 });
 export type TaskArea = z.infer<typeof TaskArea>;
 
-export const TaskList = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1),
-  areaId: z.string().uuid().nullish(),
-  icon: z.string().nullish(),
-  color: z.string().nullish(),
-  sortOrder: z.number().int().default(0),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-});
-export type TaskList = z.infer<typeof TaskList>;
-
 export const TaskTag = z.object({
   id: z.string().uuid(),
   name: z.string().min(1),
@@ -49,6 +37,8 @@ export const TaskProject = z.object({
   status: ProjectStatus.default('active'),
   icon: z.string().nullish(),
   color: z.string().nullish(),
+  startDate: z.string().nullish(),
+  dueDate: z.string().nullish(),
   sortOrder: z.number().int().default(0),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -71,8 +61,6 @@ export const TaskItem = z.object({
   id: z.string().uuid(),
   title: z.string().min(1),
   notes: z.string().nullish(),
-  listId: z.string().uuid().nullish(),
-  areaId: z.string().uuid().nullish(),
   projectId: z.string().uuid().nullish(),
   status: TaskStatus.default('todo'),
   priority: TaskPriority.default(0),
@@ -101,8 +89,6 @@ export type TaskView = z.infer<typeof TaskView>;
 export const CreateTaskInput = z.object({
   title: z.string().min(1),
   notes: z.string().nullish(),
-  listId: z.string().uuid().nullish(),
-  areaId: z.string().uuid().nullish(),
   projectId: z.string().uuid().nullish(),
   priority: TaskPriority.default(0),
   startDate: z.coerce.date().nullish(),
@@ -118,8 +104,6 @@ export const UpdateTaskInput = z.object({
   id: z.string().uuid(),
   title: z.string().min(1).optional(),
   notes: z.string().nullish(),
-  listId: z.string().uuid().nullish(),
-  areaId: z.string().uuid().nullish(),
   projectId: z.string().uuid().nullish(),
   status: TaskStatus.optional(),
   priority: TaskPriority.optional(),
@@ -135,11 +119,11 @@ export type UpdateTaskInput = z.infer<typeof UpdateTaskInput>;
 
 export const TaskFilter = z.object({
   view: TaskView.optional(),
-  listId: z.string().uuid().optional(),
-  areaId: z.string().uuid().optional(),
   projectId: z.string().uuid().optional(),
+  areaId: z.string().uuid().optional(),
   status: TaskStatus.optional(),
   focusAreaId: z.string().uuid().optional(),
+  noProject: z.boolean().optional(),
 });
 export type TaskFilter = z.infer<typeof TaskFilter>;
 
@@ -151,7 +135,7 @@ export const ReorderInput = z.object({
 });
 export type ReorderInput = z.infer<typeof ReorderInput>;
 
-// List/Area inputs
+// Area inputs
 export const CreateAreaInput = z.object({
   name: z.string().min(1),
   icon: z.string().nullish(),
@@ -163,19 +147,6 @@ export const UpdateAreaInput = CreateAreaInput.partial().extend({
   id: z.string().uuid(),
 });
 export type UpdateAreaInput = z.infer<typeof UpdateAreaInput>;
-
-export const CreateListInput = z.object({
-  name: z.string().min(1),
-  areaId: z.string().uuid().nullish(),
-  icon: z.string().nullish(),
-  color: z.string().nullish(),
-});
-export type CreateListInput = z.infer<typeof CreateListInput>;
-
-export const UpdateListInput = CreateListInput.partial().extend({
-  id: z.string().uuid(),
-});
-export type UpdateListInput = z.infer<typeof UpdateListInput>;
 
 export const CreateTagInput = z.object({
   name: z.string().min(1),
@@ -189,6 +160,8 @@ export const CreateProjectInput = z.object({
   areaId: z.string().uuid().nullish(),
   icon: z.string().nullish(),
   color: z.string().nullish(),
+  startDate: z.string().nullish(),
+  dueDate: z.string().nullish(),
 });
 export type CreateProjectInput = z.infer<typeof CreateProjectInput>;
 

@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import {
   Inbox, CalendarDays, CalendarClock, ListChecks,
-  ChevronRight, Plus, FolderOpen, MapPin, Layers,
+  ChevronRight, Plus, MapPin, Layers, CircleOff,
   Crosshair, RefreshCw,
 } from 'lucide-react';
 
@@ -11,14 +11,14 @@ type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
 
 interface TaskSidebarProps {
   activeView: ViewKey | null;
-  activeListId: string | null;
-  activeAreaId: string | null;
   activeProjectId: string | null;
+  activeAreaId: string | null;
+  noProjectFilter: boolean;
   focusAreaId: string | null;
   onViewChange: (view: ViewKey) => void;
-  onListSelect: (listId: string) => void;
-  onAreaSelect: (areaId: string) => void;
   onProjectSelect: (projectId: string) => void;
+  onAreaSelect: (areaId: string) => void;
+  onNoProjectFilter: () => void;
   onFocusArea: (areaId: string | null) => void;
 }
 
@@ -30,19 +30,15 @@ const smartViews = [
 ];
 
 export default function TaskSidebar({
-  activeView, activeListId, activeAreaId, activeProjectId, focusAreaId,
-  onViewChange, onListSelect, onAreaSelect, onProjectSelect, onFocusArea,
+  activeView, activeProjectId, activeAreaId, noProjectFilter, focusAreaId,
+  onViewChange, onProjectSelect, onAreaSelect, onNoProjectFilter, onFocusArea,
 }: TaskSidebarProps) {
   const { data: areas = [] } = trpc.tasks.areas.list.useQuery();
-  const { data: lists = [] } = trpc.tasks.lists.list.useQuery();
   const { data: projects = [] } = trpc.tasks.projects.list.useQuery();
   const utils = trpc.useUtils();
 
   const createArea = trpc.tasks.areas.create.useMutation({
     onSuccess: () => utils.tasks.areas.list.invalidate(),
-  });
-  const createList = trpc.tasks.lists.create.useMutation({
-    onSuccess: () => utils.tasks.lists.list.invalidate(),
   });
   const createProject = trpc.tasks.projects.create.useMutation({
     onSuccess: () => utils.tasks.projects.list.invalidate(),
@@ -50,10 +46,8 @@ export default function TaskSidebar({
 
   const [newAreaName, setNewAreaName] = useState('');
   const [showNewArea, setShowNewArea] = useState(false);
-  const [newListAreaId, setNewListAreaId] = useState<string | null>(null);
-  const [newListName, setNewListName] = useState('');
-  const [newProjectAreaId, setNewProjectAreaId] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState('');
+  const [showNewProject, setShowNewProject] = useState(false);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
 
   const { data: jiraStatus } = trpc.jira.status.useQuery(undefined, {
@@ -85,23 +79,13 @@ export default function TaskSidebar({
     setShowNewArea(false);
   }
 
-  function handleCreateList(areaId: string | null) {
-    const name = newListName.trim();
-    if (!name) return;
-    createList.mutate({ name, areaId });
-    setNewListName('');
-    setNewListAreaId(null);
-  }
-
-  function handleCreateProject(areaId: string | null) {
+  function handleCreateProject() {
     const name = newProjectName.trim();
     if (!name) return;
-    createProject.mutate({ name, areaId });
+    createProject.mutate({ name });
     setNewProjectName('');
-    setNewProjectAreaId(null);
+    setShowNewProject(false);
   }
-
-  const unassignedLists = lists.filter((l: any) => !l.areaId);
 
   return (
     <div className="w-52 flex-shrink-0 border-r border-border bg-surface-root overflow-y-auto">
@@ -113,7 +97,7 @@ export default function TaskSidebar({
             onClick={() => onViewChange(view.key)}
             className={cn(
               'flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
-              activeView === view.key && !activeListId && !activeAreaId
+              activeView === view.key
                 ? 'bg-primary/15 text-foreground'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
             )}
@@ -122,6 +106,20 @@ export default function TaskSidebar({
             <span>{view.label}</span>
           </button>
         ))}
+
+        {/* No Project filter */}
+        <button
+          onClick={onNoProjectFilter}
+          className={cn(
+            'flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
+            noProjectFilter
+              ? 'bg-primary/15 text-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+          )}
+        >
+          <CircleOff className="h-4 w-4 flex-shrink-0" />
+          <span>No Project</span>
+        </button>
       </div>
 
       {/* Jira sync */}
@@ -157,7 +155,57 @@ export default function TaskSidebar({
         </div>
       )}
 
-      {/* Areas with nested lists */}
+      {/* Projects */}
+      <div className="p-2 space-y-1">
+        <div className="flex items-center justify-between px-2.5 mb-1">
+          <span className="text-overline text-muted-foreground uppercase tracking-wider">Projects</span>
+          <button
+            onClick={() => setShowNewProject(true)}
+            className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {showNewProject && (
+          <div className="px-2.5">
+            <input
+              autoFocus
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreateProject();
+                if (e.key === 'Escape') { setShowNewProject(false); setNewProjectName(''); }
+              }}
+              onBlur={() => { setShowNewProject(false); setNewProjectName(''); }}
+              placeholder="Project name..."
+              className="w-full bg-surface-raised text-body text-foreground placeholder:text-muted-foreground/50 px-2 py-1 rounded border border-border focus:outline-none focus:border-primary/50"
+            />
+          </div>
+        )}
+
+        {projects
+          .filter((p: any) => !focusAreaId || areas.find((a: any) => a.id === p.areaId && a.id === focusAreaId))
+          .map((project: any) => (
+            <button
+              key={project.id}
+              onClick={() => onProjectSelect(project.id)}
+              className={cn(
+                'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
+                activeProjectId === project.id
+                  ? 'bg-primary/15 text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+              )}
+            >
+              <Layers className="h-3.5 w-3.5 flex-shrink-0" />
+              <span className="truncate">{project.name}</span>
+            </button>
+          ))}
+      </div>
+
+      <div className="mx-2 my-2 border-t border-border" />
+
+      {/* Areas */}
       <div className="p-2 space-y-1">
         <div className="flex items-center justify-between px-2.5 mb-1">
           <span className="text-overline text-muted-foreground uppercase tracking-wider">Areas</span>
@@ -187,23 +235,25 @@ export default function TaskSidebar({
         )}
 
         {areas.filter((a: any) => !focusAreaId || a.id === focusAreaId).map((area: any) => {
-          const areaLists = lists.filter((l: any) => l.areaId === area.id);
           const areaProjects = projects.filter((p: any) => p.areaId === area.id);
           const expanded = expandedAreas.has(area.id);
 
           return (
             <div key={area.id}>
               <div className="flex items-center">
-                <button
-                  onClick={() => toggleArea(area.id)}
-                  className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} />
-                </button>
+                {areaProjects.length > 0 && (
+                  <button
+                    onClick={() => toggleArea(area.id)}
+                    className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} />
+                  </button>
+                )}
                 <button
                   onClick={() => onAreaSelect(area.id)}
                   className={cn(
                     'flex items-center gap-2 flex-1 px-1.5 py-1.5 rounded-md text-body transition-colors duration-150 min-w-0',
+                    !areaProjects.length && 'ml-4',
                     activeAreaId === area.id
                       ? 'bg-primary/15 text-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
@@ -224,33 +274,10 @@ export default function TaskSidebar({
                 >
                   <Crosshair className="h-3 w-3" />
                 </button>
-                <button
-                  onClick={() => { setNewListAreaId(area.id); setExpandedAreas((p) => new Set(p).add(area.id)); }}
-                  className="p-1 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
-                  title="Add list"
-                >
-                  <Plus className="h-3 w-3" />
-                </button>
               </div>
 
-              {expanded && (
+              {expanded && areaProjects.length > 0 && (
                 <div className="ml-5 space-y-0.5">
-                  {areaLists.map((list: any) => (
-                    <button
-                      key={list.id}
-                      onClick={() => onListSelect(list.id)}
-                      className={cn(
-                        'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-body transition-colors duration-150',
-                        activeListId === list.id
-                          ? 'bg-primary/15 text-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
-                      )}
-                    >
-                      <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                      <span className="truncate">{list.name}</span>
-                    </button>
-                  ))}
-
                   {areaProjects.map((project: any) => (
                     <button
                       key={project.id}
@@ -266,63 +293,11 @@ export default function TaskSidebar({
                       <span className="truncate">{project.name}</span>
                     </button>
                   ))}
-
-                  {newListAreaId === area.id && (
-                    <input
-                      autoFocus
-                      value={newListName}
-                      onChange={(e) => setNewListName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleCreateList(area.id);
-                        if (e.key === 'Escape') { setNewListAreaId(null); setNewListName(''); }
-                      }}
-                      onBlur={() => { setNewListAreaId(null); setNewListName(''); }}
-                      placeholder="List name..."
-                      className="w-full bg-surface-raised text-body text-foreground placeholder:text-muted-foreground/50 px-2 py-1 rounded border border-border focus:outline-none focus:border-primary/50"
-                    />
-                  )}
-
-                  {newProjectAreaId === area.id && (
-                    <input
-                      autoFocus
-                      value={newProjectName}
-                      onChange={(e) => setNewProjectName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleCreateProject(area.id);
-                        if (e.key === 'Escape') { setNewProjectAreaId(null); setNewProjectName(''); }
-                      }}
-                      onBlur={() => { setNewProjectAreaId(null); setNewProjectName(''); }}
-                      placeholder="Project name..."
-                      className="w-full bg-surface-raised text-body text-foreground placeholder:text-muted-foreground/50 px-2 py-1 rounded border border-border focus:outline-none focus:border-primary/50"
-                    />
-                  )}
                 </div>
               )}
             </div>
           );
         })}
-
-        {/* Unassigned lists */}
-        {unassignedLists.length > 0 && (
-          <>
-            <div className="mx-2.5 my-1 border-t border-border" />
-            {unassignedLists.map((list: any) => (
-              <button
-                key={list.id}
-                onClick={() => onListSelect(list.id)}
-                className={cn(
-                  'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
-                  activeListId === list.id
-                    ? 'bg-primary/15 text-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
-                )}
-              >
-                <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="truncate">{list.name}</span>
-              </button>
-            ))}
-          </>
-        )}
       </div>
     </div>
   );

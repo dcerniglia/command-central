@@ -9,8 +9,7 @@ export interface TaskRowTask {
   status: string;
   priority: number;
   dueDate?: string | null;
-  listId?: string | null;
-  areaId?: string | null;
+  projectId?: string | null;
   source?: string | null;
   externalKey?: string | null;
   externalUrl?: string | null;

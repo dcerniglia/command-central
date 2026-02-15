@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc.js';
 import { SYMBOLS } from '../../di/symbols.js';
 import { TaskService } from '../../services/task-service.js';
-import { ListRepository } from '../../services/list-repository.js';
 import { AreaRepository } from '../../services/area-repository.js';
 import { TagRepository } from '../../services/tag-repository.js';
 import { ChecklistRepository } from '../../services/checklist-repository.js';
@@ -12,8 +11,6 @@ import {
   UpdateTaskInput,
   TaskFilter,
   ReorderInput,
-  CreateListInput,
-  UpdateListInput,
   CreateAreaInput,
   UpdateAreaInput,
   CreateTagInput,
@@ -57,27 +54,6 @@ export const tasksRouter = router({
   reorder: protectedProcedure.input(ReorderInput).mutation(async ({ ctx, input }) => {
     const service = ctx.container.get<TaskService>(SYMBOLS.TaskService);
     return service.reorder(input.items);
-  }),
-
-  // Lists
-  lists: router({
-    list: protectedProcedure.query(async ({ ctx }) => {
-      const repo = ctx.container.get<ListRepository>(SYMBOLS.ListRepository);
-      return repo.list();
-    }),
-    create: protectedProcedure.input(CreateListInput).mutation(async ({ ctx, input }) => {
-      const repo = ctx.container.get<ListRepository>(SYMBOLS.ListRepository);
-      return repo.create(input);
-    }),
-    update: protectedProcedure.input(UpdateListInput).mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-      const repo = ctx.container.get<ListRepository>(SYMBOLS.ListRepository);
-      return repo.update(id, data);
-    }),
-    delete: protectedProcedure.input(z.object({ id: z.string().uuid() })).mutation(async ({ ctx, input }) => {
-      const repo = ctx.container.get<ListRepository>(SYMBOLS.ListRepository);
-      return repo.delete(input.id);
-    }),
   }),
 
   // Areas

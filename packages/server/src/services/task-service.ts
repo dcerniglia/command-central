@@ -22,7 +22,7 @@ export class TaskService {
 
   async create(input: CreateTaskInput) {
     const { tagIds, dueDate, startDate, ...rest } = input;
-    const sortOrder = await this.taskRepo.getMaxSortOrder(rest.listId, rest.areaId) + 1;
+    const sortOrder = await this.taskRepo.getMaxSortOrder(rest.projectId) + 1;
     const task = await this.taskRepo.create({
       ...rest,
       sortOrder,
@@ -75,8 +75,7 @@ export class TaskService {
         await this.taskRepo.create({
           title: task.title,
           notes: task.notes,
-          listId: task.listId,
-          areaId: task.areaId,
+          projectId: task.projectId,
           priority: task.priority,
           dueDate: nextDate,
           dueTime: task.dueTime,

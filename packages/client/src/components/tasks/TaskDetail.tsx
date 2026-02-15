@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Flag, FolderOpen, MapPin, Layers, Repeat, ExternalLink, CircleDot, Clock, Timer } from 'lucide-react';
+import { X, Trash2, Flag, Layers, Repeat, ExternalLink, CircleDot, Clock, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
@@ -31,8 +31,6 @@ const priorityOptions = [
 export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const utils = trpc.useUtils();
   const { data: task, isLoading } = trpc.tasks.get.useQuery({ id: taskId });
-  const { data: lists = [] } = trpc.tasks.lists.list.useQuery();
-  const { data: areas = [] } = trpc.tasks.areas.list.useQuery();
   const { data: projects = [] } = trpc.tasks.projects.list.useQuery();
   const { data: checklist = [] } = trpc.tasks.checklist.list.useQuery({ taskId });
 
@@ -44,8 +42,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const [dueTime, setDueTime] = useState('');
   const [priority, setPriority] = useState(0);
   const [estimateMinutes, setEstimateMinutes] = useState<number | null>(null);
-  const [listId, setListId] = useState<string | null>(null);
-  const [areaId, setAreaId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null);
 
@@ -59,8 +55,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       setDueTime(task.dueTime ?? '');
       setPriority(task.priority);
       setEstimateMinutes(task.estimateMinutes ?? null);
-      setListId(task.listId ?? null);
-      setAreaId(task.areaId ?? null);
       setProjectId(task.projectId ?? null);
       setRecurrenceRule(task.recurrenceRule ?? null);
     }
@@ -294,44 +288,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* List */}
-          <div className="flex items-center gap-3">
-            <FolderOpen className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <select
-              value={listId ?? ''}
-              onChange={(e) => {
-                const val = e.target.value || null;
-                setListId(val);
-                save({ listId: val });
-              }}
-              className="flex-1 bg-transparent text-body text-foreground focus:outline-none"
-            >
-              <option value="">No list</option>
-              {lists.map((l: any) => (
-                <option key={l.id} value={l.id}>{l.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Area */}
-          <div className="flex items-center gap-3">
-            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <select
-              value={areaId ?? ''}
-              onChange={(e) => {
-                const val = e.target.value || null;
-                setAreaId(val);
-                save({ areaId: val });
-              }}
-              className="flex-1 bg-transparent text-body text-foreground focus:outline-none"
-            >
-              <option value="">No area</option>
-              {areas.map((a: any) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
           </div>
 
           {/* Project */}
