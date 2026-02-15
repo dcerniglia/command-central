@@ -130,7 +130,7 @@ test.describe('Task Management', () => {
   test('shows empty state for inbox when no tasks', async ({ page }) => {
     await page.goto('/tasks');
     await expect(page.getByText('Inbox is empty')).toBeVisible();
-    await expect(page.getByText('Tasks without a list or area show up here')).toBeVisible();
+    await expect(page.getByText('Tasks without a project show up here')).toBeVisible();
   });
 
   test('multiple tasks can be created and all appear in list', async ({ page }) => {

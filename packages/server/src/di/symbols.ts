@@ -2,7 +2,6 @@ export const SYMBOLS = {
   Database: Symbol.for('Database'),
   AuthService: Symbol.for('AuthService'),
   TaskRepository: Symbol.for('TaskRepository'),
-  ListRepository: Symbol.for('ListRepository'),
   AreaRepository: Symbol.for('AreaRepository'),
   TagRepository: Symbol.for('TagRepository'),
   ChecklistRepository: Symbol.for('ChecklistRepository'),
