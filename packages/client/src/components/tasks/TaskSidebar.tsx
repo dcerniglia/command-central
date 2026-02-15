@@ -102,6 +102,7 @@ export default function TaskSidebar({
   }
 
   const unassignedLists = lists.filter((l: any) => !l.areaId);
+  const unassignedProjects = projects.filter((p: any) => !p.areaId);
 
   return (
     <div className="w-52 flex-shrink-0 border-r border-border bg-surface-root overflow-y-auto">
@@ -192,7 +193,7 @@ export default function TaskSidebar({
           const expanded = expandedAreas.has(area.id);
 
           return (
-            <div key={area.id}>
+            <div key={area.id} className="group/area">
               <div className="flex items-center">
                 <button
                   onClick={() => toggleArea(area.id)}
@@ -226,10 +227,17 @@ export default function TaskSidebar({
                 </button>
                 <button
                   onClick={() => { setNewListAreaId(area.id); setExpandedAreas((p) => new Set(p).add(area.id)); }}
-                  className="p-1 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-1 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover/area:opacity-100"
                   title="Add list"
                 >
-                  <Plus className="h-3 w-3" />
+                  <FolderOpen className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => { setNewProjectAreaId(area.id); setExpandedAreas((p) => new Set(p).add(area.id)); }}
+                  className="p-1 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover/area:opacity-100"
+                  title="Add project"
+                >
+                  <Layers className="h-3 w-3" />
                 </button>
               </div>
 
@@ -302,8 +310,8 @@ export default function TaskSidebar({
           );
         })}
 
-        {/* Unassigned lists */}
-        {unassignedLists.length > 0 && (
+        {/* Unassigned lists and projects */}
+        {(unassignedLists.length > 0 || unassignedProjects.length > 0) && (
           <>
             <div className="mx-2.5 my-1 border-t border-border" />
             {unassignedLists.map((list: any) => (
@@ -319,6 +327,21 @@ export default function TaskSidebar({
               >
                 <FolderOpen className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="truncate">{list.name}</span>
+              </button>
+            ))}
+            {unassignedProjects.map((project: any) => (
+              <button
+                key={project.id}
+                onClick={() => onProjectSelect(project.id)}
+                className={cn(
+                  'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
+                  activeProjectId === project.id
+                    ? 'bg-primary/15 text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+                )}
+              >
+                <Layers className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="truncate">{project.name}</span>
               </button>
             ))}
           </>

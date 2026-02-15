@@ -49,6 +49,8 @@ export const TaskProject = z.object({
   status: ProjectStatus.default('active'),
   icon: z.string().nullish(),
   color: z.string().nullish(),
+  startDate: z.string().nullish(),
+  dueDate: z.string().nullish(),
   sortOrder: z.number().int().default(0),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -189,6 +191,8 @@ export const CreateProjectInput = z.object({
   areaId: z.string().uuid().nullish(),
   icon: z.string().nullish(),
   color: z.string().nullish(),
+  startDate: z.string().nullish(),
+  dueDate: z.string().nullish(),
 });
 export type CreateProjectInput = z.infer<typeof CreateProjectInput>;
 
