@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
 import MarkdownNotes from './MarkdownNotes';
+import TaskChecklist from './TaskChecklist';
 import { DatePicker } from '@/components/ui/date-picker';
 
 interface TaskDetailProps {
@@ -354,23 +355,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         </div>
 
         {/* Checklist */}
-        {checklist.length > 0 && (
-          <div className="pt-2 border-t border-border space-y-2">
-            <span className="text-overline text-muted-foreground uppercase tracking-wider">Checklist</span>
-            {checklist.map((item: any) => (
-              <div key={item.id} className="flex items-center gap-2">
-                <TaskCheckbox
-                  checked={item.done}
-                  onChange={() => {}}
-                  className="w-4 h-4"
-                />
-                <span className={cn('text-body', item.done && 'line-through text-muted-foreground')}>
-                  {item.title}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <TaskChecklist taskId={taskId} checklist={checklist} />
       </div>
     </div>
   );
