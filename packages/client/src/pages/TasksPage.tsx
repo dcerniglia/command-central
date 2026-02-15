@@ -3,6 +3,7 @@ import { trpc } from '@/lib/trpc';
 import { Inbox } from 'lucide-react';
 import TaskRow from '@/components/tasks/TaskRow';
 import TaskDetail from '@/components/tasks/TaskDetail';
+import ProjectHeader from '@/components/tasks/ProjectHeader';
 import TaskSidebar from '@/components/tasks/TaskSidebar';
 import SortableTaskList from '@/components/tasks/SortableTaskList';
 import QuickAdd, { type QuickAddHandle } from '@/components/tasks/QuickAdd';
@@ -115,6 +116,12 @@ export default function TasksPage() {
         {/* Task list */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto space-y-3">
+            {activeProjectId && (
+              <ProjectHeader
+                projectId={activeProjectId}
+                onDeleted={() => { setActiveProjectId(null); setActiveView('inbox'); }}
+              />
+            )}
             <QuickAdd ref={quickAddRef} focusAreaId={focusAreaId} />
 
             {isLoading ? (
