@@ -55,7 +55,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
             }
             title={collapsed ? item.label : undefined}
           >
-            <item.icon className={cn('h-5 w-5 flex-shrink-0')} />
+            <item.icon className={cn('h-6 w-6 flex-shrink-0')} />
             {!collapsed && <span className="font-medium">{item.label}</span>}
           </NavLink>
         ))}
@@ -73,7 +73,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
           onClick={() => logout.mutate()}
           title={collapsed ? 'Sign out' : undefined}
         >
-          <LogOut className="h-4 w-4 flex-shrink-0" />
+          <LogOut className="h-5 w-5 flex-shrink-0" />
           {!collapsed && <span>Sign out</span>}
         </Button>
       </div>
