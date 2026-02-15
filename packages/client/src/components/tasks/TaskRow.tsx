@@ -67,6 +67,11 @@ const TaskRow = forwardRef<HTMLDivElement, TaskRowProps>(function TaskRow(
     <div
       ref={ref}
       style={style}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', task.id);
+        e.dataTransfer.effectAllowed = 'move';
+      }}
       onClick={() => onClick(task.id)}
       className={cn(
         'group flex items-center gap-3 px-4 py-3 rounded-lg border border-border',
