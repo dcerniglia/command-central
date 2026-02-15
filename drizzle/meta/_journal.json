@@ -50,6 +50,13 @@
       "when": 1771128940310,
       "tag": "0006_add_processed_to_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771181356769,
+      "tag": "0007_drop_task_checklist",
+      "breakpoints": true
     }
   ]
 }
