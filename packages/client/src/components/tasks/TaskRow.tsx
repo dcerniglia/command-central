@@ -10,6 +10,7 @@ export interface TaskRowTask {
   priority: number;
   dueDate?: string | null;
   projectId?: string | null;
+  processed?: boolean;
   source?: string | null;
   externalKey?: string | null;
   externalUrl?: string | null;
@@ -91,9 +92,14 @@ const TaskRow = forwardRef<HTMLDivElement, TaskRowProps>(function TaskRow(
       <TaskCheckbox checked={isDone} onChange={() => onComplete(task.id)} />
 
       <div className="flex-1 min-w-0">
-        <p className={cn('text-body-medium text-foreground truncate', isDone && 'line-through text-muted-foreground')}>
-          {task.title}
-        </p>
+        <div className="flex items-center gap-1.5">
+          {task.processed === false && !isDone && (
+            <div className="w-1.5 h-1.5 rounded-full bg-primary/50 flex-shrink-0" title="Unprocessed" />
+          )}
+          <p className={cn('text-body-medium text-foreground truncate', isDone && 'line-through text-muted-foreground')}>
+            {task.title}
+          </p>
+        </div>
         {dueInfo && (
           <span className={cn('text-caption', dueInfo.color)}>{dueInfo.label}</span>
         )}

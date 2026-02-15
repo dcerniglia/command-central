@@ -1,0 +1,1 @@
+ALTER TABLE "task_items" ADD COLUMN "processed" boolean DEFAULT false NOT NULL;

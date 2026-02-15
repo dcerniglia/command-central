@@ -21,11 +21,12 @@ export class TaskService {
   }
 
   async create(input: CreateTaskInput) {
-    const { tagIds, dueDate, startDate, ...rest } = input;
+    const { tagIds, dueDate, startDate, processed, ...rest } = input;
     const sortOrder = await this.taskRepo.getMaxSortOrder(rest.projectId) + 1;
     const task = await this.taskRepo.create({
       ...rest,
       sortOrder,
+      processed: processed ?? false,
       startDate: startDate ? startDate.toISOString().split('T')[0] : null,
       dueDate: dueDate ? dueDate.toISOString().split('T')[0] : null,
     });

@@ -8,4 +8,5 @@ export const SYMBOLS = {
   ProjectRepository: Symbol.for('ProjectRepository'),
   TaskService: Symbol.for('TaskService'),
   JiraService: Symbol.for('JiraService'),
+  NaturalLanguageService: Symbol.for('NaturalLanguageService'),
 } as const;
