@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import TaskCheckbox from './TaskCheckbox';
 import MarkdownNotes from './MarkdownNotes';
-import TaskChecklist from './TaskChecklist';
 import { DatePicker } from '@/components/ui/date-picker';
 import TagPicker from './TagPicker';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -34,7 +33,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const utils = trpc.useUtils();
   const { data: task, isLoading } = trpc.tasks.get.useQuery({ id: taskId });
   const { data: projects = [] } = trpc.tasks.projects.list.useQuery();
-  const { data: checklist = [] } = trpc.tasks.checklist.list.useQuery({ taskId });
 
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -322,8 +320,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           />
         </div>
 
-        {/* Checklist */}
-        <TaskChecklist taskId={taskId} checklist={checklist} />
       </div>
 
       <ConfirmDialog

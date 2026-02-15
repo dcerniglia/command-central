@@ -5,7 +5,6 @@ import { TaskService } from '../../services/task-service.js';
 import { NaturalLanguageService } from '../../services/natural-language-service.js';
 import { AreaRepository } from '../../services/area-repository.js';
 import { TagRepository } from '../../services/tag-repository.js';
-import { ChecklistRepository } from '../../services/checklist-repository.js';
 import { ProjectRepository } from '../../services/project-repository.js';
 import {
   CreateTaskInput,
@@ -18,8 +17,6 @@ import {
   CreateTagInput,
   CreateProjectInput,
   UpdateProjectInput,
-  CreateChecklistInput,
-  UpdateChecklistInput,
 } from '@cc/shared';
 
 export const tasksRouter = router({
@@ -125,24 +122,4 @@ export const tasksRouter = router({
     }),
   }),
 
-  // Checklist
-  checklist: router({
-    list: protectedProcedure.input(z.object({ taskId: z.string().uuid() })).query(async ({ ctx, input }) => {
-      const repo = ctx.container.get<ChecklistRepository>(SYMBOLS.ChecklistRepository);
-      return repo.listByTask(input.taskId);
-    }),
-    create: protectedProcedure.input(CreateChecklistInput).mutation(async ({ ctx, input }) => {
-      const repo = ctx.container.get<ChecklistRepository>(SYMBOLS.ChecklistRepository);
-      return repo.create(input);
-    }),
-    update: protectedProcedure.input(UpdateChecklistInput).mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-      const repo = ctx.container.get<ChecklistRepository>(SYMBOLS.ChecklistRepository);
-      return repo.update(id, data);
-    }),
-    delete: protectedProcedure.input(z.object({ id: z.string().uuid() })).mutation(async ({ ctx, input }) => {
-      const repo = ctx.container.get<ChecklistRepository>(SYMBOLS.ChecklistRepository);
-      return repo.delete(input.id);
-    }),
-  }),
 });

@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp, uuid, integer, boolean, date, time, primaryKey } from 'drizzle-orm/pg-core';
 
+
 export const taskAreas = pgTable('task_areas', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
@@ -64,10 +65,3 @@ export const taskItemTags = pgTable('task_item_tags', {
   primaryKey({ columns: [t.taskId, t.tagId] }),
 ]);
 
-export const taskChecklist = pgTable('task_checklist', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  taskId: uuid('task_id').notNull().references(() => taskItems.id, { onDelete: 'cascade' }),
-  title: text('title').notNull(),
-  done: boolean('done').notNull().default(false),
-  sortOrder: integer('sort_order').notNull().default(0),
-});

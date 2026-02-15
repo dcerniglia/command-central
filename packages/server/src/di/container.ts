@@ -6,7 +6,6 @@ import { AuthService } from '../services/auth-service.js';
 import { TaskRepository } from '../services/task-repository.js';
 import { AreaRepository } from '../services/area-repository.js';
 import { TagRepository } from '../services/tag-repository.js';
-import { ChecklistRepository } from '../services/checklist-repository.js';
 import { ProjectRepository } from '../services/project-repository.js';
 import { TaskService } from '../services/task-service.js';
 import { JiraService } from '../services/jira-service.js';
@@ -25,7 +24,6 @@ export function createContainer(): Container {
   container.bind(SYMBOLS.TaskRepository).to(TaskRepository).inRequestScope();
   container.bind(SYMBOLS.AreaRepository).to(AreaRepository).inRequestScope();
   container.bind(SYMBOLS.TagRepository).to(TagRepository).inRequestScope();
-  container.bind(SYMBOLS.ChecklistRepository).to(ChecklistRepository).inRequestScope();
   container.bind(SYMBOLS.ProjectRepository).to(ProjectRepository).inRequestScope();
 
   // Services — singleton

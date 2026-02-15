@@ -45,15 +45,6 @@ export const TaskProject = z.object({
 });
 export type TaskProject = z.infer<typeof TaskProject>;
 
-export const TaskChecklist = z.object({
-  id: z.string().uuid(),
-  taskId: z.string().uuid(),
-  title: z.string().min(1),
-  done: z.boolean().default(false),
-  sortOrder: z.number().int().default(0),
-});
-export type TaskChecklist = z.infer<typeof TaskChecklist>;
-
 export const TaskSource = z.enum(['local', 'jira']);
 export type TaskSource = z.infer<typeof TaskSource>;
 
@@ -194,15 +185,3 @@ export const UpdateProjectInput = CreateProjectInput.partial().extend({
 });
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInput>;
 
-export const CreateChecklistInput = z.object({
-  taskId: z.string().uuid(),
-  title: z.string().min(1),
-});
-export type CreateChecklistInput = z.infer<typeof CreateChecklistInput>;
-
-export const UpdateChecklistInput = z.object({
-  id: z.string().uuid(),
-  title: z.string().min(1).optional(),
-  done: z.boolean().optional(),
-});
-export type UpdateChecklistInput = z.infer<typeof UpdateChecklistInput>;
