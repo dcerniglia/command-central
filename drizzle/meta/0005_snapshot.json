@@ -1,6 +1,6 @@
 {
-  "id": "cf96e4f9-6718-419a-bb33-ef138c6c9f2a",
-  "prevId": "782c903b-e8b5-4bfe-8095-cb56d2eb16df",
+  "id": "f9da05dc-7099-4e84-b7bd-0687f39c4e67",
+  "prevId": "cf96e4f9-6718-419a-bb33-ef138c6c9f2a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -371,18 +371,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "list_id": {
-          "name": "list_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "area_id": {
-          "name": "area_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "project_id": {
           "name": "project_id",
           "type": "uuid",
@@ -500,32 +488,6 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "task_items_list_id_task_lists_id_fk": {
-          "name": "task_items_list_id_task_lists_id_fk",
-          "tableFrom": "task_items",
-          "tableTo": "task_lists",
-          "columnsFrom": [
-            "list_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "task_items_area_id_task_areas_id_fk": {
-          "name": "task_items_area_id_task_areas_id_fk",
-          "tableFrom": "task_items",
-          "tableTo": "task_areas",
-          "columnsFrom": [
-            "area_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
         "task_items_project_id_task_projects_id_fk": {
           "name": "task_items_project_id_task_projects_id_fk",
           "tableFrom": "task_items",
@@ -550,85 +512,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.task_lists": {
-      "name": "task_lists",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "area_id": {
-          "name": "area_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "icon": {
-          "name": "icon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "color": {
-          "name": "color",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sort_order": {
-          "name": "sort_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "task_lists_area_id_task_areas_id_fk": {
-          "name": "task_lists_area_id_task_areas_id_fk",
-          "tableFrom": "task_lists",
-          "tableTo": "task_areas",
-          "columnsFrom": [
-            "area_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

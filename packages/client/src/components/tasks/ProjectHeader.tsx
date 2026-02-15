@@ -3,6 +3,7 @@ import { Layers, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import { DatePicker } from '@/components/ui/date-picker';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 const statusOptions = [
   { value: 'active', label: 'Active', color: 'text-status-info' },
@@ -26,6 +27,7 @@ export default function ProjectHeader({ projectId, onDeleted }: ProjectHeaderPro
   const [status, setStatus] = useState('active');
   const [startDate, setStartDate] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (project) {
@@ -85,9 +87,9 @@ export default function ProjectHeader({ projectId, onDeleted }: ProjectHeaderPro
           />
         </div>
         <button
-          onClick={() => deleteMutation.mutate({ id: projectId })}
+          onClick={() => setShowDeleteConfirm(true)}
           className="p-1.5 rounded-md text-muted-foreground hover:text-status-error hover:bg-status-error/10 transition-colors"
-          title="Delete project"
+          title="Archive project"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -144,6 +146,14 @@ export default function ProjectHeader({ projectId, onDeleted }: ProjectHeaderPro
       )}
 
       <div className="border-b border-border" />
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Archive this project?"
+        description={`"${project.name}" and its tasks will be archived. Tasks won't be deleted but will be hidden from views.`}
+        onConfirm={() => { setShowDeleteConfirm(false); deleteMutation.mutate({ id: projectId }); }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }

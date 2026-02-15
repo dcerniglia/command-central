@@ -6,6 +6,7 @@ export const taskAreas = pgTable('task_areas', {
   icon: text('icon'),
   color: text('color'),
   sortOrder: integer('sort_order').notNull().default(0),
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -47,6 +48,7 @@ export const taskItems = pgTable('task_items', {
   sortOrder: integer('sort_order').notNull().default(0),
   recurrenceRule: text('recurrence_rule'),
   recurrenceParentId: uuid('recurrence_parent_id'),
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
   source: text('source', { enum: ['local', 'jira'] }).notNull().default('local'),
   externalKey: text('external_key').unique(),
   externalUrl: text('external_url'),
