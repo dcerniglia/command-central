@@ -6,6 +6,7 @@ import TaskCheckbox from './TaskCheckbox';
 import MarkdownNotes from './MarkdownNotes';
 import TaskChecklist from './TaskChecklist';
 import { DatePicker } from '@/components/ui/date-picker';
+import TagPicker from './TagPicker';
 
 interface TaskDetailProps {
   taskId: string;
@@ -352,6 +353,15 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Tags */}
+        <div className="pt-2 border-t border-border">
+          <span className="text-overline text-muted-foreground uppercase tracking-wider mb-2 block">Tags</span>
+          <TagPicker
+            tagIds={task.tagIds ?? []}
+            onChange={(tagIds) => save({ tagIds })}
+          />
         </div>
 
         {/* Checklist */}
