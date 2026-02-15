@@ -140,6 +140,8 @@ export const TaskFilter = z.object({
   projectId: z.string().uuid().optional(),
   status: TaskStatus.optional(),
   focusAreaId: z.string().uuid().optional(),
+  noProject: z.boolean().optional(),
+  noArea: z.boolean().optional(),
 });
 export type TaskFilter = z.infer<typeof TaskFilter>;
 

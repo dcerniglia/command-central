@@ -9,12 +9,14 @@ import QuickAdd, { type QuickAddHandle } from '@/components/tasks/QuickAdd';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
+type SpecialFilter = 'noProject' | 'noArea';
 
 export default function TasksPage() {
   const [activeView, setActiveView] = useState<ViewKey>('inbox');
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [activeAreaId, setActiveAreaId] = useState<string | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [activeSpecialFilter, setActiveSpecialFilter] = useState<SpecialFilter | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
   const [focusAreaId, setFocusAreaId] = useState<string | null>(
@@ -38,7 +40,10 @@ export default function TasksPage() {
 
   // Build filter based on what's selected
   const filter: Record<string, any> = {};
-  if (activeListId) {
+  if (activeSpecialFilter) {
+    if (activeSpecialFilter === 'noProject') filter.noProject = true;
+    if (activeSpecialFilter === 'noArea') filter.noArea = true;
+  } else if (activeListId) {
     filter.listId = activeListId;
   } else if (activeProjectId) {
     filter.projectId = activeProjectId;
@@ -65,29 +70,36 @@ export default function TasksPage() {
   const activeTasks = tasks.filter((t: any) => !['done', 'cancelled'].includes(t.status));
   const doneTasks = tasks.filter((t: any) => t.status === 'done');
 
-  function handleViewChange(view: ViewKey) {
-    setActiveView(view);
+  function clearSelection() {
     setActiveListId(null);
     setActiveAreaId(null);
     setActiveProjectId(null);
+    setActiveSpecialFilter(null);
+  }
+
+  function handleViewChange(view: ViewKey) {
+    clearSelection();
+    setActiveView(view);
   }
 
   function handleListSelect(listId: string) {
+    clearSelection();
     setActiveListId(listId);
-    setActiveAreaId(null);
-    setActiveProjectId(null);
   }
 
   function handleAreaSelect(areaId: string) {
+    clearSelection();
     setActiveAreaId(areaId);
-    setActiveListId(null);
-    setActiveProjectId(null);
   }
 
   function handleProjectSelect(projectId: string) {
+    clearSelection();
     setActiveProjectId(projectId);
-    setActiveListId(null);
-    setActiveAreaId(null);
+  }
+
+  function handleSpecialFilter(f: SpecialFilter) {
+    clearSelection();
+    setActiveSpecialFilter(f);
   }
 
   // Determine header title
@@ -99,15 +111,17 @@ export default function TasksPage() {
   return (
     <div className="flex h-full">
       <TaskSidebar
-        activeView={!activeListId && !activeAreaId && !activeProjectId ? activeView : null}
+        activeView={!activeListId && !activeAreaId && !activeProjectId && !activeSpecialFilter ? activeView : null}
         activeListId={activeListId}
         activeAreaId={activeAreaId}
         activeProjectId={activeProjectId}
+        activeSpecialFilter={activeSpecialFilter}
         focusAreaId={focusAreaId}
         onViewChange={handleViewChange}
         onListSelect={handleListSelect}
         onAreaSelect={handleAreaSelect}
         onProjectSelect={handleProjectSelect}
+        onSpecialFilter={handleSpecialFilter}
         onFocusArea={handleFocusArea}
       />
 
@@ -115,7 +129,12 @@ export default function TasksPage() {
         {/* Task list */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-2xl mx-auto space-y-3">
-            <QuickAdd ref={quickAddRef} focusAreaId={focusAreaId} />
+            <QuickAdd
+              ref={quickAddRef}
+              focusAreaId={focusAreaId}
+              projectId={activeProjectId}
+              areaId={activeAreaId}
+            />
 
             {isLoading ? (
               <div className="space-y-3 mt-4">

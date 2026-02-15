@@ -45,6 +45,14 @@ export class TaskRepository {
       conditions.push(lte(taskItems.dueDate, weekFromNow));
     }
 
+    if (filter.noProject) {
+      conditions.push(isNull(taskItems.projectId));
+    }
+
+    if (filter.noArea) {
+      conditions.push(isNull(taskItems.areaId));
+    }
+
     if (filter.focusAreaId) {
       const listIdsInArea = this.db
         .select({ id: taskLists.id })

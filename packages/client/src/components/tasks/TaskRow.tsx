@@ -11,6 +11,7 @@ export interface TaskRowTask {
   dueDate?: string | null;
   listId?: string | null;
   areaId?: string | null;
+  projectId?: string | null;
   source?: string | null;
   externalKey?: string | null;
   externalUrl?: string | null;
@@ -90,9 +91,17 @@ const TaskRow = forwardRef<HTMLDivElement, TaskRowProps>(function TaskRow(
         <p className={cn('text-body-medium text-foreground truncate', isDone && 'line-through text-muted-foreground')}>
           {task.title}
         </p>
-        {dueInfo && (
-          <span className={cn('text-caption', dueInfo.color)}>{dueInfo.label}</span>
-        )}
+        <div className="flex items-center gap-2">
+          {dueInfo && (
+            <span className={cn('text-caption', dueInfo.color)}>{dueInfo.label}</span>
+          )}
+          {!task.projectId && !isDone && (
+            <span className="text-[11px] text-muted-foreground/50">No project</span>
+          )}
+          {!task.areaId && !isDone && (
+            <span className="text-[11px] text-muted-foreground/50">No area</span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">

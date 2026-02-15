@@ -4,21 +4,24 @@ import { trpc } from '@/lib/trpc';
 import {
   Inbox, CalendarDays, CalendarClock, ListChecks,
   ChevronRight, Plus, FolderOpen, MapPin, Layers,
-  Crosshair, RefreshCw,
+  Crosshair, RefreshCw, CircleOff,
 } from 'lucide-react';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
+type SpecialFilter = 'noProject' | 'noArea';
 
 interface TaskSidebarProps {
   activeView: ViewKey | null;
   activeListId: string | null;
   activeAreaId: string | null;
   activeProjectId: string | null;
+  activeSpecialFilter: SpecialFilter | null;
   focusAreaId: string | null;
   onViewChange: (view: ViewKey) => void;
   onListSelect: (listId: string) => void;
   onAreaSelect: (areaId: string) => void;
   onProjectSelect: (projectId: string) => void;
+  onSpecialFilter: (filter: SpecialFilter) => void;
   onFocusArea: (areaId: string | null) => void;
 }
 
@@ -30,8 +33,8 @@ const smartViews = [
 ];
 
 export default function TaskSidebar({
-  activeView, activeListId, activeAreaId, activeProjectId, focusAreaId,
-  onViewChange, onListSelect, onAreaSelect, onProjectSelect, onFocusArea,
+  activeView, activeListId, activeAreaId, activeProjectId, activeSpecialFilter, focusAreaId,
+  onViewChange, onListSelect, onAreaSelect, onProjectSelect, onSpecialFilter, onFocusArea,
 }: TaskSidebarProps) {
   const { data: areas = [] } = trpc.tasks.areas.list.useQuery();
   const { data: lists = [] } = trpc.tasks.lists.list.useQuery();
@@ -120,6 +123,22 @@ export default function TaskSidebar({
           >
             <view.icon className="h-4 w-4 flex-shrink-0" />
             <span>{view.label}</span>
+          </button>
+        ))}
+        {/* Unassigned filters */}
+        {(['noProject', 'noArea'] as const).map((key) => (
+          <button
+            key={key}
+            onClick={() => onSpecialFilter(key)}
+            className={cn(
+              'flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-md text-body transition-colors duration-150',
+              activeSpecialFilter === key
+                ? 'bg-primary/15 text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
+            )}
+          >
+            <CircleOff className="h-4 w-4 flex-shrink-0" />
+            <span>{key === 'noProject' ? 'No Project' : 'No Area'}</span>
           </button>
         ))}
       </div>
