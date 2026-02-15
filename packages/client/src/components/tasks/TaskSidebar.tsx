@@ -3,10 +3,11 @@ import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import {
   Inbox, CalendarDays, CalendarClock, ListChecks,
-  ChevronRight, Plus, MapPin, Layers, CircleOff,
+  ChevronRight, Plus, CircleOff,
   Crosshair, RefreshCw, Tag, X, Trash2,
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { getIconComponent, getColorClass } from '@/components/ui/icon-color-picker';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
 
@@ -49,13 +50,15 @@ function ProjectDropButton({
   onDropTask,
   className: extraClassName,
 }: {
-  project: { id: string; name: string };
+  project: { id: string; name: string; icon?: string | null; color?: string | null };
   isActive: boolean;
   onClick: () => void;
   onDropTask?: (taskId: string, projectId: string) => void;
   className?: string;
 }) {
   const drop = useDropTarget((taskId) => onDropTask?.(taskId, project.id));
+  const Icon = getIconComponent(project.icon);
+  const colorClass = getColorClass(project.color);
   return (
     <button
       onClick={onClick}
@@ -69,7 +72,7 @@ function ProjectDropButton({
         extraClassName,
       )}
     >
-      <Layers className="h-3.5 w-3.5 flex-shrink-0" />
+      <Icon className={cn('h-3.5 w-3.5 flex-shrink-0', !isActive && colorClass)} />
       <span className="truncate">{project.name}</span>
     </button>
   );
@@ -327,7 +330,7 @@ export default function TaskSidebar({
                       : 'text-muted-foreground hover:text-foreground hover:bg-surface-overlay',
                   )}
                 >
-                  <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                  {(() => { const AreaIcon = getIconComponent(area.icon); return <AreaIcon className={cn('h-3.5 w-3.5 flex-shrink-0', activeAreaId !== area.id && getColorClass(area.color))} />; })()}
                   <span className="truncate">{area.name}</span>
                 </button>
                 <button

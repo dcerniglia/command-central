@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Layers, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/lib/trpc';
 import { DatePicker } from '@/components/ui/date-picker';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+import IconColorPicker, { getIconComponent, getColorClass } from '@/components/ui/icon-color-picker';
 
 const statusOptions = [
   { value: 'active', label: 'Active', color: 'text-status-info' },
@@ -68,7 +69,15 @@ export default function ProjectHeader({ projectId, onDeleted }: ProjectHeaderPro
     <div className="mb-6 space-y-3">
       {/* Title row */}
       <div className="flex items-start gap-3">
-        <Layers className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
+        <div className="mt-1">
+          <IconColorPicker
+            icon={project.icon ?? null}
+            color={project.color ?? null}
+            onChangeIcon={(icon) => save({ icon })}
+            onChangeColor={(color) => save({ color })}
+            size="md"
+          />
+        </div>
         <div className="flex-1 min-w-0">
           <input
             value={name}
