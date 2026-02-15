@@ -4,8 +4,9 @@ import { trpc } from '@/lib/trpc';
 import {
   Inbox, CalendarDays, CalendarClock, ListChecks,
   ChevronRight, Plus, MapPin, Layers, CircleOff,
-  Crosshair, RefreshCw, Tag, X,
+  Crosshair, RefreshCw, Tag, X, Trash2,
 } from 'lucide-react';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 type ViewKey = 'inbox' | 'today' | 'upcoming' | 'all';
 
@@ -105,6 +106,14 @@ export default function TaskSidebar({
     onSuccess: () => utils.tasks.tags.list.invalidate(),
   });
 
+  const deleteArea = trpc.tasks.areas.delete.useMutation({
+    onSuccess: () => {
+      utils.tasks.areas.list.invalidate();
+      utils.tasks.projects.list.invalidate();
+      utils.tasks.list.invalidate();
+    },
+  });
+
   const [showNewTag, setShowNewTag] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const [newAreaName, setNewAreaName] = useState('');
@@ -112,6 +121,7 @@ export default function TaskSidebar({
   const [newProjectName, setNewProjectName] = useState('');
   const [showNewProject, setShowNewProject] = useState(false);
   const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'area' | 'tag'; id: string; name: string } | null>(null);
 
   const { data: jiraStatus } = trpc.jira.status.useQuery(undefined, {
     retry: false,
@@ -326,11 +336,18 @@ export default function TaskSidebar({
                     'p-1 rounded transition-colors',
                     focusAreaId === area.id
                       ? 'text-primary'
-                      : 'text-muted-foreground/0 hover:text-muted-foreground',
+                      : 'text-muted-foreground/0 group-hover/area:text-muted-foreground',
                   )}
                   title={focusAreaId === area.id ? 'Clear focus' : 'Focus on this area'}
                 >
                   <Crosshair className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => setConfirmDelete({ type: 'area', id: area.id, name: area.name })}
+                  className="p-1 rounded opacity-0 group-hover/area:opacity-100 text-muted-foreground hover:text-status-error transition-all"
+                  title="Archive area"
+                >
+                  <Trash2 className="h-3 w-3" />
                 </button>
               </div>
 
@@ -396,7 +413,7 @@ export default function TaskSidebar({
             <Tag className="h-3.5 w-3.5 flex-shrink-0" />
             <span className="truncate flex-1">{tag.name}</span>
             <button
-              onClick={() => deleteTag.mutate({ id: tag.id })}
+              onClick={() => setConfirmDelete({ type: 'tag', id: tag.id, name: tag.name })}
               className="p-0.5 rounded opacity-0 group-hover/tag:opacity-100 text-muted-foreground hover:text-status-error transition-all"
             >
               <X className="h-3 w-3" />
@@ -404,6 +421,23 @@ export default function TaskSidebar({
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title={confirmDelete?.type === 'area' ? 'Archive this area?' : 'Delete this tag?'}
+        description={
+          confirmDelete?.type === 'area'
+            ? `"${confirmDelete?.name}" will be archived. Its projects and tasks will remain but won't be grouped under this area.`
+            : `"${confirmDelete?.name}" will be removed from all tasks.`
+        }
+        confirmLabel={confirmDelete?.type === 'area' ? 'Archive' : 'Delete'}
+        onConfirm={() => {
+          if (confirmDelete?.type === 'area') deleteArea.mutate({ id: confirmDelete.id });
+          else if (confirmDelete?.type === 'tag') deleteTag.mutate({ id: confirmDelete.id });
+          setConfirmDelete(null);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

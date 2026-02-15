@@ -7,6 +7,7 @@ import MarkdownNotes from './MarkdownNotes';
 import TaskChecklist from './TaskChecklist';
 import { DatePicker } from '@/components/ui/date-picker';
 import TagPicker from './TagPicker';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 interface TaskDetailProps {
   taskId: string;
@@ -45,6 +46,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const [estimateMinutes, setEstimateMinutes] = useState<number | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -120,9 +122,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => deleteMutation.mutate({ id: taskId })}
+            onClick={() => setShowDeleteConfirm(true)}
             className="p-1.5 rounded-md text-muted-foreground hover:text-status-error hover:bg-status-error/10 transition-colors"
-            title="Delete task"
+            title="Archive task"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -323,6 +325,14 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         {/* Checklist */}
         <TaskChecklist taskId={taskId} checklist={checklist} />
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Archive this task?"
+        description="This task will be archived and hidden from all views. It can be restored later."
+        onConfirm={() => { setShowDeleteConfirm(false); deleteMutation.mutate({ id: taskId }); }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, isNull } from 'drizzle-orm';
 import { SYMBOLS } from '../di/symbols.js';
 import { taskAreas } from '../db/schema/tasks.js';
 import type { Database } from '../db/drizzle.js';
@@ -9,7 +9,7 @@ export class AreaRepository {
   constructor(@inject(SYMBOLS.Database) private db: Database) {}
 
   async list() {
-    return this.db.select().from(taskAreas).orderBy(asc(taskAreas.sortOrder));
+    return this.db.select().from(taskAreas).where(isNull(taskAreas.archivedAt)).orderBy(asc(taskAreas.sortOrder));
   }
 
   async getById(id: string) {
@@ -32,6 +32,9 @@ export class AreaRepository {
   }
 
   async delete(id: string) {
-    await this.db.delete(taskAreas).where(eq(taskAreas.id, id));
+    await this.db
+      .update(taskAreas)
+      .set({ archivedAt: new Date(), updatedAt: new Date() })
+      .where(eq(taskAreas.id, id));
   }
 }
